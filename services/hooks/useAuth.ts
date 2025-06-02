@@ -17,7 +17,7 @@ export const useLogin = () => {
     mutationFn: (credentials: LoginRequest) => authApi.login(credentials),
     onSuccess: (data) => {
       // Cache user data
-      queryClient.setQueryData(authKeys.profile(), data.user)
+      queryClient.setQueryData(authKeys.profile(), data.data)
       // Invalidate and refetch any cached data
       queryClient.invalidateQueries({ queryKey: authKeys.all })
     },

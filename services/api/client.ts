@@ -2,7 +2,7 @@ import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } f
 
 // API Configuration
 const API_CONFIG = {
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api',
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000/api/v1',
   timeout: 30000, // 30 seconds
   headers: {
     'Content-Type': 'application/json',
@@ -117,9 +117,19 @@ export const setAuthToken = (token: string | null) => {
   if (token) {
     localStorage.setItem('auth_token', token)
     apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`
+    
+    // Also set cookie for middleware
+    if (typeof document !== 'undefined') {
+      document.cookie = `auth_token=${token}; path=/; max-age=${7 * 24 * 60 * 60}` // 7 days
+    }
   } else {
     localStorage.removeItem('auth_token')
     delete apiClient.defaults.headers.common['Authorization']
+    
+    // Clear cookie
+    if (typeof document !== 'undefined') {
+      document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
+    }
   }
 }
 

@@ -20,24 +20,37 @@ export interface ApiError {
 
 // Authentication Types
 export interface LoginRequest {
-  email: string
+  userName: string
   password: string
 }
 
 export interface LoginResponse {
-  user: User
+  status: number
+  status_code: string
   token: string
-  refreshToken: string
+  data: User
+  msg: string
 }
 
 export interface User {
-  id: number
-  fullName: string
+  _id: string
   email: string
-  role: 'Super Admin' | 'Admin'
-  status: 'Active' | 'Inactive'
+  userName: string
+  phoneNumber: string
+  balance: number
+  apiToken: string
+  userType: string
+  isPartner: boolean
+  isSpecial: boolean
+  fullName: string
+  bvn: string
+  nin: string
+  referrals: any[]
+  accountNumbers: any[]
+  specialPrices: any[]
   createdAt: string
   updatedAt: string
+  __v: number
 }
 
 // System Users Types

@@ -150,6 +150,36 @@ export const createMockPaginatedResponse = <T>(
 export const mockDelay = (ms: number = 500): Promise<void> => 
   new Promise(resolve => setTimeout(resolve, ms))
 
+// Mock Auth Data
+export const mockAuthUser = {
+  _id: "67a5f0c5608e11b05dc7fc1e",
+  email: "testing@gmail.com",
+  userName: "testing",
+  phoneNumber: "08108126121",
+  balance: 0,
+  apiToken: "VLedYaK9267dRcYZPTIMBdRaeY9etF",
+  userType: "smart earner",
+  isPartner: false,
+  isSpecial: false,
+  fullName: "Test User",
+  bvn: "",
+  nin: "",
+  referrals: [],
+  accountNumbers: [],
+  specialPrices: [],
+  createdAt: "2025-02-07T11:38:45.576Z",
+  updatedAt: "2025-02-07T11:38:45.577Z",
+  __v: 0
+}
+
+export const mockLoginResponse = {
+  status: 200,
+  status_code: "OK",
+  token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2N2E1ZjBjNTYwOGUxMWIwNWRjN2ZjMWUiLCJ1c2VyVHlwZSI6InNtYXJ0IGVhcm5lciIsImlhdCI6MTc0MzM0MzUyOCwiZXhwIjoxNzQzNDI5OTI4fQ.gQTbG0lVJNrj3iemqih8yTyJIW0-C26p-49z-Kl3KnM",
+  data: mockAuthUser,
+  msg: "Login successful"
+}
+
 // Check if we should use mock data
 export const shouldUseMockData = (): boolean => {
   return process.env.NODE_ENV === 'development' && 

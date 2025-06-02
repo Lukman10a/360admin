@@ -105,11 +105,13 @@ export default function Dashboard() {
           <h1 className="text-xl md:text-2xl font-bold text-gray-900">Dashboard</h1>
           <p className="text-sm md:text-base text-gray-600">Welcome, Abdulsalam</p>
         </div>
-        {/* Notification icon for mobile */}
-        <div className="md:hidden">
-          <Link href="/notifications" className="p-1 text-gray-500">
-            <Bell className="w-5 h-5" />
-          </Link>
+        <div className="flex items-center gap-2">
+          {/* Notification icon for mobile */}
+          <div className="md:hidden">
+            <Link href="/notifications-management" className="p-2 text-gray-500 hover:text-indigo-600 transition-colors rounded-md hover:bg-gray-100">
+              <Bell className="w-5 h-5" />
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -145,7 +147,7 @@ export default function Dashboard() {
               />
             </svg>
           </div>
-          <Link href="#" className="flex items-center text-indigo-100 hover:text-white text-xs md:text-sm">
+          <Link href="/transactions" className="flex items-center text-indigo-100 hover:text-white text-xs md:text-sm transition-colors">
             <span>Transaction History</span>
             <ArrowRight className="ml-1 w-3 h-3 md:w-4 md:h-4" />
           </Link>
@@ -154,7 +156,7 @@ export default function Dashboard() {
           <h2 className="text-3xl md:text-4xl font-bold mb-4 md:mb-0">
             ₦500<span className="text-indigo-200">.85</span>
           </h2>
-          <button className="bg-white text-indigo-600 px-4 py-2 rounded-md text-sm font-medium flex items-center justify-center w-full md:w-auto">
+          <button className="bg-white text-indigo-600 px-4 py-2 rounded-md text-sm font-medium flex items-center justify-center w-full md:w-auto hover:bg-gray-50 transition-colors shadow-sm">
             <CreditCard className="mr-2 w-4 h-4" />
             Fund Wallet
           </button>
@@ -162,12 +164,12 @@ export default function Dashboard() {
       </div>
 
       {/* Services */}
-      <div className="grid grid-cols-4 gap-2 md:gap-4 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 md:gap-4 mb-6">
         {services.map((service) => (
           <Link
-            href="#"
+            href="/services"
             key={service.id}
-            className="bg-white p-2 md:p-4 rounded-lg border border-gray-200 flex flex-col items-center justify-center hover:shadow-md transition-shadow"
+            className="bg-white p-2 md:p-4 rounded-lg border border-gray-200 flex flex-col items-center justify-center hover:shadow-md transition-all hover:border-indigo-200"
           >
             <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 mb-1 md:mb-3">
               <service.icon className="w-4 h-4 md:w-5 md:h-5" />
@@ -181,14 +183,14 @@ export default function Dashboard() {
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
         <div className="flex justify-between items-center p-3 md:p-4 border-b border-gray-200">
           <h3 className="text-sm md:text-base font-medium">Recent Transactions</h3>
-          <Link href="#" className="text-xs md:text-sm text-gray-500 flex items-center hover:text-indigo-600">
+          <Link href="/transactions" className="text-xs md:text-sm text-gray-500 flex items-center hover:text-indigo-600 transition-colors">
             View all
             <ArrowRight className="ml-1 w-3 h-3 md:w-4 md:h-4" />
           </Link>
         </div>
         <div className="divide-y divide-gray-200">
           {transactions.map((transaction) => (
-            <div key={transaction.id} className="p-3 md:p-4 flex items-center justify-between hover:bg-gray-50">
+            <div key={transaction.id} className="p-3 md:p-4 flex items-center justify-between hover:bg-gray-50 transition-colors cursor-pointer">
               <div className="flex items-center">
                 <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 mr-3">
                   <transaction.icon className="w-4 h-4 md:w-5 md:h-5" />
