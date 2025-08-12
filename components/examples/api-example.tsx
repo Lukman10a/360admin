@@ -36,8 +36,9 @@ export default function ApiExample() {
     try {
       await createUserMutation.mutateAsync({
         fullName: newUserName,
-        username: newUserName.toLowerCase().replace(/\s+/g, ''),
+        userName: newUserName.toLowerCase().replace(/\s+/g, ''),
         email: newUserEmail,
+        phoneNumber: '+2348000000000', // In real app, get from user input
         password: 'password123', // In real app, generate secure password
         role: 'Admin'
       })
@@ -123,7 +124,7 @@ export default function ApiExample() {
                   Total users: {users.meta?.total || users.data.length}
                 </p>
                 <div className="grid gap-2">
-                  {users.data.map((user) => (
+                  {users.data.map((user: any) => (
                     <div 
                       key={user.id} 
                       className="border rounded-lg p-3 bg-gray-50"

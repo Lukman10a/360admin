@@ -1,6 +1,6 @@
-import apiClient, { setAuthToken } from './client'
-import { LoginRequest, LoginResponse, User, ApiResponse } from '../types'
-import { shouldUseMockData, mockDelay, mockLoginResponse } from './mock-data'
+import apiClient, { setAuthToken } from '../infrastructure/client'
+import { LoginRequest, LoginResponse, User, ApiResponse } from '../../types'
+import { shouldUseMockData, mockDelay, mockLoginResponse } from '../infrastructure/mock-data'
 
 export const authApi = {
   // Login user

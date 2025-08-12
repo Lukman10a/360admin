@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
-import { getAuthToken } from '@/services/api/client'
+import { getAuthToken } from '@/services/api/infrastructure/client'
 
 interface AuthWrapperProps {
   children: React.ReactNode

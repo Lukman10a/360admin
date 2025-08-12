@@ -8,7 +8,8 @@
 // ============================================================================
 
 export interface LoginRequest {
-  userName: string // Can be email or username
+  userName?: string // Can be email or username
+  email?: string // Can be email or username
   password: string
 }
 
@@ -72,6 +73,54 @@ export interface UpdateUserRequest {
   fullName?: string
   bvn?: string
   nin?: string
+}
+
+export interface UpdateSubscriberRequest {
+  email?: string
+  userName?: string
+  referredBy?: string
+  phoneNumber?: string
+  fullName?: string
+  subscriptionType?: 'Basic' | 'Premium' | 'Enterprise'
+  status?: 'Active' | 'Inactive' | 'Suspended'
+}
+
+export interface CreateSystemUserRequest {
+  email: string
+  userName: string
+  phoneNumber: string
+  role: 'Super Admin' | 'Admin'
+  password: string
+  fullName: string
+}
+
+export interface CreateUserRequest {
+  email: string
+  userName: string
+  phoneNumber: string
+  role: 'Super Admin' | 'Admin' | 'User' | 'Agent' | 'Vendor'
+  password: string
+  fullName: string
+  referredBy?: string
+}
+
+export interface UpdateSystemUserRequest {
+  email?: string
+  userName?: string
+  phoneNumber?: string
+  role?: 'Super Admin' | 'Admin'
+  fullName?: string
+  status?: 'Active' | 'Inactive' | 'Suspended'
+}
+
+export interface CreateSubscriberRequest {
+  email: string
+  userName: string
+  phoneNumber: string
+  password: string
+  fullName: string
+  subscriptionType?: 'Basic' | 'Premium' | 'Enterprise'
+  referredBy?: string
 }
 
 export interface UpdateUserResponse {
@@ -428,6 +477,14 @@ export interface FundTransferError {
   code?: string
 }
 
+export interface CreditUserAction {
+  userId: string
+  action: 'credit' | 'debit'
+  amount: number
+  reason: string
+  reference?: string
+}
+
 // ============================================================================
 // ADMIN OPERATIONS
 // ============================================================================
@@ -491,6 +548,12 @@ export interface ApiSuccessResponse<T = any> {
   status_code: string
   data: T
   msg: string
+}
+
+export interface ApiResponse<T = any> {
+  success: boolean
+  data: T
+  msg?: string
 }
 
 export interface ApiErrorResponse {

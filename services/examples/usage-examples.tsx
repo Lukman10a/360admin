@@ -15,7 +15,7 @@ import { api } from '../api'
 export const loginExample = async () => {
   try {
     const loginData = await api.auth.login({
-      email: 'admin@360data.com',
+      userName: 'admin@360data.com',
       password: 'password123'
     })
     console.log('Login successful:', loginData)
@@ -29,7 +29,7 @@ export const loginExample = async () => {
 // Example: Get all system users with pagination
 export const getSystemUsersExample = async () => {
   try {
-    const users = await api.systemUsers.getAll({
+    const users = await api.users.system.getAll({
       page: 1,
       limit: 10,
       search: 'admin'
@@ -45,13 +45,12 @@ export const getSystemUsersExample = async () => {
 // Example: Create new subscriber
 export const createSubscriberExample = async () => {
   try {
-    const newSubscriber = await api.subscribers.create({
-      firstName: 'John',
-      lastName: 'Doe',
+    const newSubscriber = await api.users.subscribers.create({
+      fullName: 'John Doe',
+      userName: 'johndoe',
       email: 'john.doe@example.com',
-      phone: '+2348123456789',
-      password: 'password123',
-      state: 'Lagos'
+      phoneNumber: '+2348123456789',
+      password: 'password123'
     })
     console.log('Subscriber created:', newSubscriber)
     return newSubscriber
@@ -65,21 +64,23 @@ export const createSubscriberExample = async () => {
 // REACT QUERY HOOKS USAGE (Recommended approach)
 // ============================================================================
 
+import { useState } from 'react'
 import { 
   useSystemUsers, 
   useCreateSystemUser, 
   useSubscribers,
   useCreateSubscriber,
-  useAuth,
   useLogin,
   useLogout
 } from '../hooks'
 
 // Example: Authentication Component
 export const AuthExample = () => {
-  const { user, isAuthenticated, isLoading } = useAuth()
   const loginMutation = useLogin()
   const logoutMutation = useLogout()
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [user, setUser] = useState<any>(null)
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleLogin = async (email: string, password: string) => {
     try {
@@ -136,8 +137,9 @@ export const SystemUsersExample = () => {
     try {
       await createUserMutation.mutateAsync({
         fullName: 'New Admin',
-        username: 'newadmin',
+        userName: 'newadmin',
         email: 'newadmin@360data.com',
+        phoneNumber: '+2348000000000',
         password: 'password123',
         role: 'Admin'
       })
@@ -162,7 +164,7 @@ export const SystemUsersExample = () => {
       </button>
 
       <div>
-        {users?.data.map(user => (
+        {users?.data.map((user: any) => (
           <div key={user.id}>
             <h3>{user.fullName}</h3>
             <p>Email: {user.email}</p>
@@ -191,12 +193,11 @@ export const SubscribersExample = () => {
   const handleCreateSubscriber = async () => {
     try {
       await createSubscriberMutation.mutateAsync({
-        firstName: 'Jane',
-        lastName: 'Smith',
+        fullName: 'Jane Smith',
+        userName: 'janesmith',
         email: 'jane.smith@example.com',
-        phone: '+2348987654321',
-        password: 'password123',
-        state: 'Abuja'
+        phoneNumber: '+2348987654321',
+        password: 'password123'
       })
       console.log('Subscriber created successfully!')
       // Data will automatically refetch due to React Query cache invalidation
@@ -230,7 +231,7 @@ export const SubscribersExample = () => {
       </div>
 
       <div className="grid gap-4">
-        {subscribers?.data.map(subscriber => (
+        {subscribers?.data.map((subscriber: any) => (
           <div key={subscriber.id} className="border p-4 rounded">
             <h3>{subscriber.fullName}</h3>
             <p>Email: {subscriber.email}</p>
@@ -257,8 +258,9 @@ export const ErrorHandlingExample = () => {
     try {
       await createUserMutation.mutateAsync({
         fullName: 'Test User',
-        username: 'testuser',
+        userName: 'testuser',
         email: 'test@360data.com',
+        phoneNumber: '+2348000000000',
         password: 'password123',
         role: 'Admin'
       })
@@ -298,7 +300,7 @@ export const OptimisticUpdateExample = () => {
 
   return (
     <div>
-      {users?.data.map(user => (
+      {users?.data.map((user: any) => (
         <div key={user.id}>
           <span>{user.fullName}</span>
           <button onClick={() => handleOptimisticUpdate(user.id)}>

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useLogin } from '@/services/hooks'
-import { getAuthToken } from '@/services/api/client'
+import { getAuthToken } from '@/services/api/infrastructure/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'

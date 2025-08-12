@@ -1,154 +1,293 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { authApi } from '../api/auth'
-import { LoginRequest, User } from '../types'
+import { useQuery, useMutation, useQueryClient, UseQueryOptions, UseMutationOptions } from '@tanstack/react-query'
+import { ApiService } from '../api/api-service'
+import { setAuthToken, getAuthToken } from '../api'
+import {
+  LoginRequest, LoginResponse, RegisterRequest, RegisterResponse,
+  UpdateUserRequest, UpdateUserResponse, DeleteUserResponse, UpgradeUserResponse,
+  RequestPasswordResetRequest, RequestPasswordResetResponse,
+  ResetPasswordRequest, ResetPasswordResponse, ChangePasswordRequest, ChangePasswordResponse,
+  ApiSuccessResponse
+} from '../types'
 
-// Query keys
-export const authKeys = {
-  all: ['auth'] as const,
-  profile: () => [...authKeys.all, 'profile'] as const,
-  verify: () => [...authKeys.all, 'verify'] as const,
-}
+// ============================================================================
+// AUTHENTICATION HOOKS
+// ============================================================================
 
-// Login mutation
-export const useLogin = () => {
-  const queryClient = useQueryClient()
-  
-  return useMutation({
-    mutationFn: (credentials: LoginRequest) => authApi.login(credentials),
-    onSuccess: (data) => {
-      // Cache user data
-      queryClient.setQueryData(authKeys.profile(), data.data)
-      // Invalidate and refetch any cached data
-      queryClient.invalidateQueries({ queryKey: authKeys.all })
-    },
-    onError: (error) => {
-      console.error('Login failed:', error)
-    },
+// User Profile Query
+export const useUserProfile = (options?: UseQueryOptions<ApiSuccessResponse<any>>) => {
+  return useQuery({
+    queryKey: ['user', 'profile'],
+    queryFn: () => ApiService.getUserProfile(),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    enabled: !!getAuthToken(), // Only fetch if user is authenticated
+    ...options,
   })
 }
 
-// Logout mutation
+// User Login Mutation
+export const useLogin = (options?: UseMutationOptions<LoginResponse, Error, LoginRequest>) => {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: (request: LoginRequest) => ApiService.login(request),
+    onSuccess: (data) => {
+      // Set auth token
+      setAuthToken(data.token)
+      
+      // Invalidate user profile to refetch with new token
+      queryClient.invalidateQueries({ queryKey: ['user', 'profile'] })
+      
+      // Clear any error states
+      queryClient.setQueryData(['auth', 'error'], null)
+    },
+    onError: (error) => {
+      // Set error state
+      queryClient.setQueryData(['auth', 'error'], error.message)
+    },
+    ...options,
+  })
+}
+
+// User Registration Mutation
+export const useRegister = (options?: UseMutationOptions<RegisterResponse, Error, RegisterRequest>) => {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: (request: RegisterRequest) => ApiService.register(request),
+    onSuccess: (data) => {
+      // Set auth token
+      setAuthToken(data.token)
+      
+      // Invalidate user profile to refetch with new token
+      queryClient.invalidateQueries({ queryKey: ['user', 'profile'] })
+      
+      // Clear any error states
+      queryClient.setQueryData(['auth', 'error'], null)
+    },
+    onError: (error) => {
+      // Set error state
+      queryClient.setQueryData(['auth', 'error'], error.message)
+    },
+    ...options,
+  })
+}
+
+// User Logout
 export const useLogout = () => {
   const queryClient = useQueryClient()
   
   return useMutation({
-    mutationFn: () => authApi.logout(),
-    onSuccess: () => {
-      // Clear all cached data
-      queryClient.clear()
-    },
-    onError: (error) => {
-      console.error('Logout failed:', error)
-      // Even if logout fails, clear local data
-      queryClient.clear()
-    },
-  })
-}
-
-// Get user profile query
-export const useProfile = (enabled: boolean = true) => {
-  return useQuery({
-    queryKey: authKeys.profile(),
-    queryFn: () => authApi.getProfile(),
-    enabled,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    retry: (failureCount, error: any) => {
-      // In development without API, don't retry
-      if (process.env.NODE_ENV === 'development' && !process.env.NEXT_PUBLIC_API_BASE_URL) {
-        return false
-      }
+    mutationFn: async () => {
+      // Clear auth token
+      setAuthToken(null)
       
-      // Don't retry on 401 errors
-      if (error?.response?.status === 401) {
-        return false
-      }
-      return failureCount < 3
+      // Clear all user-related queries
+      queryClient.removeQueries({ queryKey: ['user'] })
+      queryClient.removeQueries({ queryKey: ['transactions'] })
+      
+      // Reset auth state
+      queryClient.setQueryData(['auth', 'user'], null)
+      queryClient.setQueryData(['auth', 'error'], null)
+      
+      return Promise.resolve()
     },
   })
 }
 
-// Verify token query
-export const useVerifyToken = (enabled: boolean = true) => {
-  return useQuery({
-    queryKey: authKeys.verify(),
-    queryFn: () => authApi.verifyToken(),
-    enabled: enabled && process.env.NEXT_PUBLIC_API_BASE_URL !== undefined, // Only enable if API is configured
-    staleTime: 2 * 60 * 1000, // 2 minutes
-    retry: false, // Don't retry token verification
-  })
+// Check Authentication Status
+export const useAuthStatus = () => {
+  const token = getAuthToken()
+  const { data: user, isLoading, error } = useUserProfile()
+  
+  return {
+    isAuthenticated: !!token && !!user,
+    isLoading,
+    user: user?.data || null,
+    error,
+    token,
+  }
 }
 
-// Refresh token mutation
-export const useRefreshToken = () => {
+// ============================================================================
+// USER MANAGEMENT HOOKS
+// ============================================================================
+
+// Update User Profile Mutation
+export const useUpdateProfile = (options?: UseMutationOptions<UpdateUserResponse, Error, { id: string; request: UpdateUserRequest }>) => {
   const queryClient = useQueryClient()
   
   return useMutation({
-    mutationFn: () => authApi.refreshToken(),
-    onSuccess: () => {
-      // Invalidate auth queries to refetch with new token
-      queryClient.invalidateQueries({ queryKey: authKeys.all })
+    mutationFn: ({ id, request }: { id: string; request: UpdateUserRequest }) => 
+      ApiService.updateUser(id, request),
+    onSuccess: (_, { id }) => {
+      // Invalidate user profile and specific user
+      queryClient.invalidateQueries({ queryKey: ['user', 'profile'] })
+      queryClient.invalidateQueries({ queryKey: ['user', id] })
     },
-    onError: (error) => {
-      console.error('Token refresh failed:', error)
-      // Clear auth data on refresh failure
-      queryClient.removeQueries({ queryKey: authKeys.all })
-    },
+    ...options,
   })
 }
 
-// Change password mutation
-export const useChangePassword = () => {
-  return useMutation({
-    mutationFn: (data: { currentPassword: string; newPassword: string }) => 
-      authApi.changePassword(data),
-    onSuccess: () => {
-      console.log('Password changed successfully')
-    },
-    onError: (error) => {
-      console.error('Password change failed:', error)
-    },
-  })
-}
-
-// Request password reset mutation
-export const useRequestPasswordReset = () => {
-  return useMutation({
-    mutationFn: (email: string) => authApi.requestPasswordReset(email),
-    onSuccess: () => {
-      console.log('Password reset email sent')
-    },
-    onError: (error) => {
-      console.error('Password reset request failed:', error)
-    },
-  })
-}
-
-// Reset password mutation
-export const useResetPassword = () => {
-  return useMutation({
-    mutationFn: (data: { token: string; password: string }) => 
-      authApi.resetPassword(data),
-    onSuccess: () => {
-      console.log('Password reset successfully')
-    },
-    onError: (error) => {
-      console.error('Password reset failed:', error)
-    },
-  })
-}
-
-// Custom hook for authentication state
-export const useAuth = () => {
-  const { data: user, isLoading: isLoadingProfile, error } = useProfile()
-  const { data: isTokenValid, isLoading: isVerifyingToken } = useVerifyToken()
+// Delete User Account Mutation
+export const useDeleteAccount = (options?: UseMutationOptions<DeleteUserResponse, Error, string>) => {
+  const queryClient = useQueryClient()
+  const logoutMutation = useLogout()
   
-  const isAuthenticated = !!user && isTokenValid
-  const isLoading = isLoadingProfile || isVerifyingToken
+  return useMutation({
+    mutationFn: (id: string) => ApiService.deleteUser(id),
+    onSuccess: (_, id) => {
+      // Remove user from cache
+      queryClient.removeQueries({ queryKey: ['user', id] })
+      queryClient.invalidateQueries({ queryKey: ['users'] })
+      
+      // Logout user after account deletion
+      logoutMutation.mutate()
+    },
+    ...options,
+  })
+}
+
+// Upgrade User Account Mutation
+export const useUpgradeAccount = (options?: UseMutationOptions<UpgradeUserResponse, Error, void>) => {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: () => ApiService.upgradeUser(),
+    onSuccess: () => {
+      // Invalidate user profile
+      queryClient.invalidateQueries({ queryKey: ['user', 'profile'] })
+    },
+    ...options,
+  })
+}
+
+// ============================================================================
+// PASSWORD MANAGEMENT HOOKS
+// ============================================================================
+
+// Request Password Reset Mutation
+export const useRequestPasswordReset = (options?: UseMutationOptions<RequestPasswordResetResponse, Error, RequestPasswordResetRequest>) => {
+  return useMutation({
+    mutationFn: (request: RequestPasswordResetRequest) => ApiService.requestPasswordReset(request),
+    ...options,
+  })
+}
+
+// Reset Password Mutation
+export const useResetPassword = (options?: UseMutationOptions<ResetPasswordResponse, Error, ResetPasswordRequest>) => {
+  return useMutation({
+    mutationFn: (request: ResetPasswordRequest) => ApiService.resetPassword(request),
+    ...options,
+  })
+}
+
+// Change Password Mutation
+export const useChangePassword = (options?: UseMutationOptions<ChangePasswordResponse, Error, ChangePasswordRequest>) => {
+  return useMutation({
+    mutationFn: (request: ChangePasswordRequest) => ApiService.changePassword(request),
+    ...options,
+  })
+}
+
+// ============================================================================
+// AUTH STATE MANAGEMENT
+// ============================================================================
+
+// Get Auth Error
+export const useAuthError = () => {
+  return useQuery({
+    queryKey: ['auth', 'error'],
+    queryFn: () => null,
+    staleTime: Infinity,
+    gcTime: Infinity,
+  })
+}
+
+// Set Auth Error
+export const useSetAuthError = () => {
+  const queryClient = useQueryClient()
+  
+  const setError = (error: string | null) => {
+    queryClient.setQueryData(['auth', 'error'], error)
+  }
+  
+  const clearError = () => {
+    queryClient.setQueryData(['auth', 'error'], null)
+  }
+  
+  return { setError, clearError }
+}
+
+// ============================================================================
+// AUTH GUARDS & PROTECTION
+// ============================================================================
+
+// Require Authentication Hook
+export const useRequireAuth = (redirectTo?: string) => {
+  const { isAuthenticated, isLoading, user } = useAuthStatus()
+  
+  // You can add router logic here if needed
+  // const router = useRouter()
+  
+  // useEffect(() => {
+  //   if (!isLoading && !isAuthenticated && redirectTo) {
+  //     router.push(redirectTo)
+  //   }
+  // }, [isAuthenticated, isLoading, redirectTo, router])
   
   return {
-    user,
     isAuthenticated,
     isLoading,
-    error,
+    user,
+    requireAuth: !isLoading && !isAuthenticated,
   }
+}
+
+// Optional Authentication Hook
+export const useOptionalAuth = () => {
+  const { isAuthenticated, isLoading, user } = useAuthStatus()
+  
+  return {
+    isAuthenticated,
+    isLoading,
+    user,
+    isReady: !isLoading,
+  }
+}
+
+// ============================================================================
+// AUTH PERSISTENCE
+// ============================================================================
+
+// Persist Auth State
+export const usePersistAuth = () => {
+  const queryClient = useQueryClient()
+  
+  const persistAuth = () => {
+    const token = getAuthToken()
+    if (token) {
+      // Prefetch user profile if token exists
+      queryClient.prefetchQuery({
+        queryKey: ['user', 'profile'],
+        queryFn: () => ApiService.getUserProfile(),
+        staleTime: 5 * 60 * 1000,
+      })
+    }
+  }
+  
+  return { persistAuth }
+}
+
+// Auto-refresh Auth Token
+export const useAutoRefreshAuth = () => {
+  const queryClient = useQueryClient()
+  
+  const refreshAuth = () => {
+    // Implement token refresh logic here if needed
+    // For now, just invalidate user profile to refetch
+    queryClient.invalidateQueries({ queryKey: ['user', 'profile'] })
+  }
+  
+  return { refreshAuth }
 } 

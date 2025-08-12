@@ -1,11 +1,11 @@
-import apiClient from './client'
-import { ENDPOINTS } from './endpoint'
-import { 
-  TransferFundRequest, 
-  TransferFundResponse, 
+import apiClient from '../infrastructure/client'
+import { ENDPOINTS } from '../infrastructure/endpoint'
+import {
+  TransferFundRequest,
+  TransferFundResponse,
   FundTransferError,
-  ApiResponse 
-} from '../types'
+  ApiResponse
+} from '../../types'
 
 /**
  * Fund Transfer API Service

@@ -1,15 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { systemUsersApi, subscribersApi, creditUsersApi } from '../api/users'
+import { systemUsersApi, subscribersApi, creditUsersApi } from '../api/domain/users'
 import {
   SystemUser,
-  CreateSystemUserRequest,
-  UpdateSystemUserRequest,
   Subscriber,
-  CreateSubscriberRequest,
-  UpdateSubscriberRequest,
   CreditUser,
   CreditUserAction,
   PaginationParams,
+  CreateSystemUserRequest,
+  UpdateSystemUserRequest,
+  CreateSubscriberRequest,
+  UpdateSubscriberRequest,
 } from '../types'
 
 // Query keys
@@ -58,9 +58,11 @@ export const useUpdateSystemUser = () => {
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: UpdateSystemUserRequest }) => 
       systemUsersApi.update(id, data),
-    onSuccess: (updatedUser) => {
+    onSuccess: (updatedUser: any) => {
       queryClient.invalidateQueries({ queryKey: userKeys.systemUsers() })
-      queryClient.setQueryData(userKeys.systemUser(updatedUser.id), updatedUser)
+      if (updatedUser && updatedUser.id) {
+        queryClient.setQueryData(userKeys.systemUser(updatedUser.id), updatedUser)
+      }
     },
   })
 }
@@ -82,9 +84,11 @@ export const useToggleSystemUserStatus = () => {
   
   return useMutation({
     mutationFn: (id: number) => systemUsersApi.toggleStatus(id),
-    onSuccess: (updatedUser) => {
+    onSuccess: (updatedUser: any) => {
       queryClient.invalidateQueries({ queryKey: userKeys.systemUsers() })
-      queryClient.setQueryData(userKeys.systemUser(updatedUser.id), updatedUser)
+      if (updatedUser && updatedUser.id) {
+        queryClient.setQueryData(userKeys.systemUser(updatedUser.id), updatedUser)
+      }
     },
   })
 }
@@ -124,9 +128,11 @@ export const useUpdateSubscriber = () => {
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: UpdateSubscriberRequest }) => 
       subscribersApi.update(id, data),
-    onSuccess: (updatedSubscriber) => {
+    onSuccess: (updatedSubscriber: any) => {
       queryClient.invalidateQueries({ queryKey: userKeys.subscribers() })
-      queryClient.setQueryData(userKeys.subscriber(updatedSubscriber.id), updatedSubscriber)
+      if (updatedSubscriber && updatedSubscriber.id) {
+        queryClient.setQueryData(userKeys.subscriber(updatedSubscriber.id), updatedSubscriber)
+      }
     },
   })
 }
@@ -148,9 +154,11 @@ export const useToggleSubscriberStatus = () => {
   
   return useMutation({
     mutationFn: (id: number) => subscribersApi.toggleStatus(id),
-    onSuccess: (updatedSubscriber) => {
+    onSuccess: (updatedSubscriber: any) => {
       queryClient.invalidateQueries({ queryKey: userKeys.subscribers() })
-      queryClient.setQueryData(userKeys.subscriber(updatedSubscriber.id), updatedSubscriber)
+      if (updatedSubscriber && updatedSubscriber.id) {
+        queryClient.setQueryData(userKeys.subscriber(updatedSubscriber.id), updatedSubscriber)
+      }
     },
   })
 }
@@ -161,9 +169,11 @@ export const useUpgradeSubscriberAccount = () => {
   return useMutation({
     mutationFn: ({ id, accountType }: { id: number; accountType: 'Agent' | 'Vendor' }) => 
       subscribersApi.upgradeAccount(id, accountType),
-    onSuccess: (updatedSubscriber) => {
+    onSuccess: (updatedSubscriber: any) => {
       queryClient.invalidateQueries({ queryKey: userKeys.subscribers() })
-      queryClient.setQueryData(userKeys.subscriber(updatedSubscriber.id), updatedSubscriber)
+      if (updatedSubscriber && updatedSubscriber.id) {
+        queryClient.setQueryData(userKeys.subscriber(updatedSubscriber.id), updatedSubscriber)
+      }
     },
   })
 }
@@ -176,9 +186,11 @@ export const useUpdateSubscriberWallet = () => {
       id: number; 
       data: { action: 'credit' | 'debit'; amount: number; reason: string } 
     }) => subscribersApi.updateWallet(id, data),
-    onSuccess: (updatedSubscriber) => {
+    onSuccess: (updatedSubscriber: any) => {
       queryClient.invalidateQueries({ queryKey: userKeys.subscribers() })
-      queryClient.setQueryData(userKeys.subscriber(updatedSubscriber.id), updatedSubscriber)
+      if (updatedSubscriber && updatedSubscriber.id) {
+        queryClient.setQueryData(userKeys.subscriber(updatedSubscriber.id), updatedSubscriber)
+      }
     },
   })
 }
@@ -230,9 +242,11 @@ export const useUpdateCreditUser = () => {
       id: number; 
       data: { fullName?: string; phone?: string; status?: 'Active' | 'Inactive' } 
     }) => creditUsersApi.update(id, data),
-    onSuccess: (updatedUser) => {
+    onSuccess: (updatedUser: any) => {
       queryClient.invalidateQueries({ queryKey: userKeys.creditUsers() })
-      queryClient.setQueryData(userKeys.creditUser(updatedUser.id), updatedUser)
+      if (updatedUser && updatedUser.id) {
+        queryClient.setQueryData(userKeys.creditUser(updatedUser.id), updatedUser)
+      }
     },
   })
 }
@@ -254,9 +268,11 @@ export const useUpdateCreditUserBalance = () => {
   
   return useMutation({
     mutationFn: (data: CreditUserAction) => creditUsersApi.updateBalance(data),
-    onSuccess: (updatedUser) => {
+    onSuccess: (updatedUser: any) => {
       queryClient.invalidateQueries({ queryKey: userKeys.creditUsers() })
-      queryClient.setQueryData(userKeys.creditUser(updatedUser.id), updatedUser)
+      if (updatedUser && updatedUser.id) {
+        queryClient.setQueryData(userKeys.creditUser(updatedUser.id), updatedUser)
+      }
     },
   })
 }
@@ -275,9 +291,11 @@ export const useToggleCreditUserStatus = () => {
   
   return useMutation({
     mutationFn: (id: number) => creditUsersApi.toggleStatus(id),
-    onSuccess: (updatedUser) => {
+    onSuccess: (updatedUser: any) => {
       queryClient.invalidateQueries({ queryKey: userKeys.creditUsers() })
-      queryClient.setQueryData(userKeys.creditUser(updatedUser.id), updatedUser)
+      if (updatedUser && updatedUser.id) {
+        queryClient.setQueryData(userKeys.creditUser(updatedUser.id), updatedUser)
+      }
     },
   })
 } 

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { FundTransferService } from '../api/fund-transfer'
+import { FundTransferService } from '../api/domain/fund-transfer'
 import { TransferFundRequest, TransferFundResponse } from '../types'
 
 interface UseFundTransferReturn {

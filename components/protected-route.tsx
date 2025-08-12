@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { getAuthToken } from '@/services/api/client'
+import { getAuthToken } from '@/services/api/infrastructure/client'
 
 interface ProtectedRouteProps {
   children: React.ReactNode

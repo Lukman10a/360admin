@@ -1,295 +1,102 @@
-// Base API Response Types
-export interface ApiResponse<T = any> {
-  success: boolean
-  message: string
-  data: T
-  meta?: {
-    total: number
-    page: number
-    limit: number
-    totalPages: number
-  }
-}
+// ============================================================================
+// TYPES INDEX
+// Central export point for all TypeScript types
+// ============================================================================
 
-export interface ApiError {
-  success: false
-  message: string
-  errors?: Record<string, string[]>
-  code?: string
-}
+// ============================================================================
+// CORE BUSINESS TYPES
+// ============================================================================
 
-// Authentication Types
-export interface LoginRequest {
-  userName: string
-  password: string
-}
-
-export interface LoginResponse {
-  status: number
-  status_code: string
-  token: string
-  data: User
-  msg: string
-}
-
+// User Management Types
 export interface User {
   _id: string
-  email: string
   userName: string
+  email: string
   phoneNumber: string
-  balance: number
-  apiToken: string
-  userType: string
-  isPartner: boolean
-  isSpecial: boolean
-  fullName: string
-  bvn: string
-  nin: string
-  referrals: any[]
-  accountNumbers: any[]
-  specialPrices: any[]
-  createdAt: string
-  updatedAt: string
-  __v: number
-}
-
-// System Users Types
-export interface SystemUser {
-  id: number
-  fullName: string
-  username: string
-  email: string
-  role: 'Super Admin' | 'Admin'
-  status: 'Active' | 'Inactive'
-  createdAt: string
-  updatedAt: string
-  lastLogin?: string
-}
-
-export interface CreateSystemUserRequest {
-  fullName: string
-  username: string
-  email: string
-  password: string
-  role: 'Super Admin' | 'Admin'
-}
-
-export interface UpdateSystemUserRequest {
-  fullName?: string
-  username?: string
-  email?: string
-  role?: 'Super Admin' | 'Admin'
-  status?: 'Active' | 'Inactive'
-}
-
-// Subscribers Types
-export interface Subscriber {
-  id: number
-  fullName: string
-  firstName: string
-  lastName: string
-  email: string
-  phone: string
-  wallet: number
-  account: 'Subscriber' | 'Agent' | 'Vendor'
+  role: 'Super Admin' | 'Admin' | 'User' | 'Agent' | 'Vendor'
   status: 'Active' | 'Inactive' | 'Suspended'
-  state: string
-  regDate: string
-  regTime: string
-  lastActivity: string
-  lastActivityTime: string
-}
-
-export interface CreateSubscriberRequest {
-  firstName: string
-  lastName: string
-  email: string
-  phone: string
-  password: string
-  state: string
-}
-
-export interface UpdateSubscriberRequest {
-  firstName?: string
-  lastName?: string
-  email?: string
-  phone?: string
-  state?: string
-  status?: 'Active' | 'Inactive' | 'Suspended'
-}
-
-// Credit Users Types
-export interface CreditUser {
-  id: number
-  email: string
-  fullName: string
-  phone: string
-  balance: number
-  status: 'Active' | 'Inactive'
+  walletBalance: number
+  referralCode: string
+  referredBy?: string
   createdAt: string
   updatedAt: string
 }
 
-export interface CreditUserAction {
-  email: string
-  action: 'credit' | 'debit'
-  amount: number
-  reason: string
+export interface SystemUser extends User {
+  permissions: string[]
+  lastLogin: string
+  loginAttempts: number
+  isLocked: boolean
 }
 
-// Transaction Types
-export interface Transaction {
-  id: number
-  refId: string
-  user: string
-  userType: 'Subscriber' | 'Agent' | 'Vendor' | 'System User'
-  phone: string
-  service: string
-  description: string
-  amount: number
-  status: 'Success' | 'Failed' | 'Pending' | 'Processing'
-  type: 'Airtime TopUp' | 'Data Bundle' | 'Electricity' | 'Wallet Credit' | 'Airtime Conversion'
-  createdAt: string
-  updatedAt: string
+export interface Subscriber extends User {
+  subscriptionType: 'Basic' | 'Premium' | 'Enterprise'
+  subscriptionStatus: 'Active' | 'Expired' | 'Cancelled'
+  subscriptionExpiry: string
 }
 
-export interface TransactionFilters {
-  dateFrom?: string
-  dateTo?: string
-  status?: string
-  type?: string
-  userType?: string
-  search?: string
-  page?: number
-  limit?: number
+export interface CreditUser extends User {
+  creditLimit: number
+  creditUsed: number
+  creditExpiry: string
+  paymentHistory: PaymentRecord[]
 }
 
-// Service Types
-export interface AirtimeDiscount {
-  id: number
-  network: 'MTN' | 'Glo' | 'Airtel' | '9mobile'
-  userDiscount: number
-  agentDiscount: number
-  vendorDiscount: number
-  status: 'Active' | 'Inactive'
-  createdAt: string
-  updatedAt: string
-}
-
-export interface CreateAirtimeDiscountRequest {
-  network: 'MTN' | 'Glo' | 'Airtel' | '9mobile'
-  userDiscount: number
-  agentDiscount: number
-  vendorDiscount: number
-}
-
-export interface UpdateAirtimeDiscountRequest {
-  userDiscount?: number
-  agentDiscount?: number
-  vendorDiscount?: number
-  status?: 'Active' | 'Inactive'
-}
+// ============================================================================
+// SERVICE & TRANSACTION TYPES
+// ============================================================================
 
 export interface DataPlan {
-  id: number
-  network: 'MTN' | 'Glo' | 'Airtel' | '9mobile'
-  name: string
-  dataType: 'Gifting' | 'SME' | 'Corporate' | 'Direct'
-  planId: string
-  duration: number // in days
-  buyingPrice: number
+  _id: string
+  planName: string
+  planNetwork: 'MTN' | 'GLO' | 'AIRTEL' | '9MOBILE'
+  planType: 'Gifting' | 'SME' | 'Corporate' | 'Direct'
+  planSize: string
+  planValidity: string
   userPrice: number
   agentPrice: number
   vendorPrice: number
-  status: 'Active' | 'Inactive'
+  isActive: boolean
   createdAt: string
   updatedAt: string
 }
 
-export interface CreateDataPlanRequest {
-  network: 'MTN' | 'Glo' | 'Airtel' | '9mobile'
-  name: string
-  dataType: 'Gifting' | 'SME' | 'Corporate' | 'Direct'
-  planId: string
-  duration: number
-  buyingPrice: number
-  userPrice: number
-  agentPrice: number
-  vendorPrice: number
-}
-
-export interface UpdateDataPlanRequest {
-  name?: string
-  dataType?: 'Gifting' | 'SME' | 'Corporate' | 'Direct'
-  planId?: string
-  duration?: number
-  buyingPrice?: number
-  userPrice?: number
-  agentPrice?: number
-  vendorPrice?: number
-  status?: 'Active' | 'Inactive'
-}
-
-// Notification Types
-export interface Notification {
-  id: number
-  subject: string
-  message: string
-  for: 'General' | 'Subscribers' | 'Agents' | 'Vendors' | 'System Users'
-  status: 'Active' | 'Inactive'
+export interface Transaction {
+  _id: string
+  transactionId: string
+  type: 'Airtime' | 'Data' | 'Electricity' | 'CableTV' | 'Transfer' | 'Funding'
+  description: string
+  amount: number
+  status: 'Success' | 'Failed' | 'Pending'
+  userId: string
+  userName: string
+  network?: string
+  phoneNumber?: string
+  meterNumber?: string
+  discoName?: string
+  cableProvider?: string
+  smartCardNumber?: string
+  planName?: string
+  receipt?: {
+    transactionId: string
+    timestamp: string
+    reference: string
+    status: 'Success' | 'Failed' | 'Pending'
+  }
   createdAt: string
   updatedAt: string
 }
 
-export interface CreateNotificationRequest {
-  subject: string
-  message: string
-  messageFor: 'General' | 'Subscribers' | 'Agents' | 'Vendors' | 'System Users'
-}
+// ============================================================================
+// SETTINGS & CONFIGURATION TYPES
+// ============================================================================
 
-export interface UpdateNotificationRequest {
-  subject?: string
-  message?: string
-  messageFor?: 'General' | 'Subscribers' | 'Agents' | 'Vendors' | 'System Users'
-  status?: 'Active' | 'Inactive'
-}
-
-// Settings Types
-export interface GeneralApiSettings {
-  dataApiKey: string
-  dataApiUrl: string
-  dataBalanceCheckUrl: string
-  dataFundAccount: string
-  vtuApiKey: string
-  vtuApiUrl: string
-  vtuBalanceCheckUrl: string
-  vtuFundAccount: string
-  cableTvApiKey: string
-  cableTvIucVerificationUrl: string
-  electricityMeterApiKey: string
-  electricityMeterVerificationUrl: string
-  electricityApiUrl: string
-  examApiKey: string
-  electricityCheckerApiUrl: string
-}
-
-export interface PaystackSettings {
-  publicKey: string
-  secretKey: string
-  baseUrl: string
-  webhookUrl: string
-  webhookSecret: string
-  callbackUrl: string
-  currency: string
-  merchantEmail: string
-}
-
-export interface MonnifySettings {
-  apiKey: string
-  secretKey: string
-  contractCode: string
-  baseUrl: string
-  reservedAccountName: string
+export interface ApiSettings {
+  paystackSecretKey: string
+  paystackPublicKey: string
+  monnifyContractCode: string
+  monnifyBaseUrl: string
+  monnifyReservedAccountName: string
   webhookUrl: string
   callbackUrl: string
   redirectUrl: string
@@ -321,7 +128,10 @@ export interface ContactDetails {
   telegramUsername: string
 }
 
-// Dashboard Types
+// ============================================================================
+// DASHBOARD & ANALYTICS TYPES
+// ============================================================================
+
 export interface DashboardStats {
   totalUsers: number
   totalSubscribers: number
@@ -342,31 +152,17 @@ export interface RecentTransaction {
   status: 'Success' | 'Failed' | 'Pending'
 }
 
-// Fund Transfer Types
-export interface TransferFundRequest {
-  userName: string // username or email
+// ============================================================================
+// UTILITY & COMMON TYPES
+// ============================================================================
+
+export interface PaymentRecord {
   amount: number
+  date: string
+  status: 'Success' | 'Failed' | 'Pending'
+  reference: string
 }
 
-export interface TransferFundResponse {
-  msg: string
-  amount: number
-  receipt?: {
-    transactionId: string
-    timestamp: string
-    fromUser: string
-    toUser: string
-    amount: number
-    status: 'Success' | 'Failed' | 'Pending'
-  }
-}
-
-export interface FundTransferError {
-  msg: string
-  code?: string
-}
-
-// Pagination Types
 export interface PaginationParams {
   page?: number
   limit?: number
@@ -385,5 +181,8 @@ export interface PaginatedResponse<T> {
   }
 }
 
-// Export all API endpoint types
+// ============================================================================
+// API ENDPOINT TYPES
+// All comprehensive API types are exported from here
+// ============================================================================
 export * from './api-endpoints' 

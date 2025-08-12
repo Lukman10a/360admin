@@ -1,5 +1,5 @@
-import apiClient from './client'
-import { ENDPOINTS } from './endpoint'
+import apiClient from './infrastructure/client'
+import { ENDPOINTS } from './infrastructure/endpoint'
 import {
   // User types
   LoginRequest, LoginResponse, RegisterRequest, RegisterResponse,

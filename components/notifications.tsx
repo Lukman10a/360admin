@@ -58,7 +58,7 @@ export default function Notifications() {
     },
   ]
 
-  const getStatusColor = (status) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
       case "Success":
         return "text-green-600"
@@ -71,7 +71,7 @@ export default function Notifications() {
     }
   }
 
-  const getStatusDot = (status) => {
+  const getStatusDot = (status: string) => {
     switch (status) {
       case "Success":
         return "bg-green-600"
