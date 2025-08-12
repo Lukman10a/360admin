@@ -6,6 +6,8 @@ import { transactionsApi } from './transactions'
 import { notificationsApi } from './notifications'
 import { settingsApi } from './settings'
 import { dashboardApi } from './dashboard'
+import { FundTransferService } from './fund-transfer'
+import { ApiService } from './api-service'
 
 // Export API client and utilities
 export { default as apiClient, setAuthToken, getAuthToken, isApiConfigured } from './client'
@@ -18,6 +20,8 @@ export { transactionsApi } from './transactions'
 export { notificationsApi } from './notifications'
 export { settingsApi } from './settings'
 export { dashboardApi } from './dashboard'
+export { FundTransferService } from './fund-transfer'
+export { ApiService } from './api-service'
 
 // Export all types
 export * from '../types'
@@ -38,4 +42,6 @@ export const api = {
   notifications: notificationsApi,
   settings: settingsApi,
   dashboard: dashboardApi,
+  fundTransfer: FundTransferService,
+  comprehensive: ApiService,
 } 

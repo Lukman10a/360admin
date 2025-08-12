@@ -342,6 +342,30 @@ export interface RecentTransaction {
   status: 'Success' | 'Failed' | 'Pending'
 }
 
+// Fund Transfer Types
+export interface TransferFundRequest {
+  userName: string // username or email
+  amount: number
+}
+
+export interface TransferFundResponse {
+  msg: string
+  amount: number
+  receipt?: {
+    transactionId: string
+    timestamp: string
+    fromUser: string
+    toUser: string
+    amount: number
+    status: 'Success' | 'Failed' | 'Pending'
+  }
+}
+
+export interface FundTransferError {
+  msg: string
+  code?: string
+}
+
 // Pagination Types
 export interface PaginationParams {
   page?: number
@@ -359,4 +383,7 @@ export interface PaginatedResponse<T> {
     limit: number
     totalPages: number
   }
-} 
+}
+
+// Export all API endpoint types
+export * from './api-endpoints' 
