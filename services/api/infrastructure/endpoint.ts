@@ -1,4 +1,6 @@
-export const API_BASE_URL = "https://mobileappserver-3hcm.onrender.com/api/v1";
+export const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  "https://mobileappserver-3hcm.onrender.com/api/v1";
 
 export const ENDPOINTS = {
   USER: {
@@ -11,6 +13,7 @@ export const ENDPOINTS = {
     PASSWORD_RESET: "/auth/resetPassword",
     UPGRADE: "/auth/upgrade",
     DELETE_USER: (id: string) => `/auth/user/${id}`,
+    GET_ALL_USERS: "/auth/users", // New endpoint for getting all users
   },
   CONTACT: {
     ADD: "/auth/contact",

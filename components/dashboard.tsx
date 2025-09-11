@@ -1,74 +1,69 @@
-"use client"
-import { ArrowRight, Bell, CreditCard, RefreshCw, Smartphone, Wifi, Zap } from "lucide-react"
-import Link from "next/link"
+"use client";
+
+import { useTransactions } from "@/services/hooks";
+import { Transaction } from "@/services/types/api-endpoints";
+import { useAuthLoading, useUser } from "@/stores/user-store";
+import {
+  ArrowRight,
+  Bell,
+  CreditCard,
+  RefreshCw,
+  Smartphone,
+  Wifi,
+  Zap,
+} from "lucide-react";
+import Link from "next/link";
 
 export default function Dashboard() {
-  const transactions = [
-    {
-      id: 1,
-      type: "Airtime TopUp",
-      description: "Mtn ₦500 airtime top up",
-      amount: -400,
-      time: "5 mins ago",
-      icon: Smartphone,
-    },
-    {
-      id: 2,
-      type: "Airtime TopUp",
-      description: "Airtel ₦200 airtime top up",
-      amount: -200,
-      time: "30 mins ago",
-      icon: Smartphone,
-    },
-    {
-      id: 3,
-      type: "Data Bundle",
-      description: "Mtn 5GB data Bundle",
-      amount: -4900,
-      time: "44 mins ago",
-      icon: Wifi,
-    },
-    {
-      id: 4,
-      type: "Electricity",
-      description: "IBEDC prepaid",
-      amount: -1850,
-      time: "1 hr ago",
-      icon: Zap,
-    },
-    {
-      id: 5,
-      type: "Airtime TopUp",
-      description: "Mtn ₦1000 airtime top up",
-      amount: -954,
-      time: "2 hrs ago",
-      icon: Smartphone,
-    },
-    {
-      id: 6,
-      type: "Airtime Conversion",
-      description: "10 hrs ago",
-      amount: 5000,
-      time: "10 hrs ago",
-      icon: RefreshCw,
-    },
-    {
-      id: 7,
-      type: "Airtime TopUp",
-      description: "1 day ago",
-      amount: -1000,
-      time: "1 day ago",
-      icon: Smartphone,
-    },
-    {
-      id: 8,
-      type: "Data Bundle",
-      description: "3 days ago",
-      amount: -2000,
-      time: "3 days ago",
-      icon: Wifi,
-    },
-  ]
+  const user = useUser();
+  const userLoading = useAuthLoading();
+  const { data: transactionsData, isLoading: transactionsLoading } =
+    useTransactions();
+
+  // Helper function to get transaction icon
+  const getTransactionIcon = (type: string) => {
+    switch (type?.toLowerCase()) {
+      case "data":
+        return Wifi;
+      case "airtime":
+        return Smartphone;
+      case "electricity":
+        return Zap;
+      case "wallet":
+        return CreditCard;
+      default:
+        return RefreshCw;
+    }
+  };
+
+  // Process transactions data
+  const transactions =
+    transactionsData?.data?.slice(0, 8).map((transaction: Transaction) => ({
+      id: transaction._id || transaction.trans_Id,
+      type: getTransactionTypeLabel(transaction.trans_Type),
+      description: `${transaction.trans_Network} ${transaction.trans_Type} for ${transaction.phone_number}`,
+      amount: transaction.trans_amount || 0,
+      time: transaction.createdAt
+        ? new Date(transaction.createdAt).toLocaleDateString()
+        : "Recent",
+      icon: getTransactionIcon(transaction.trans_Type),
+    })) || [];
+
+  // Helper function to get transaction type label
+  const getTransactionTypeLabel = (type: string) => {
+    switch (type?.toLowerCase()) {
+      case "data":
+        return "Data Bundle";
+      case "airtime":
+        return "Airtime TopUp";
+      case "electricity":
+        return "Electricity";
+      case "wallet":
+        return "Wallet Credit";
+      default:
+        return "Transaction";
+    }
+  };
 
   const services = [
     {
@@ -95,20 +90,31 @@ export default function Dashboard() {
       fullName: "Airtime Conversion",
       icon: RefreshCw,
     },
-  ]
+  ];
+
+  // Get user display info
+  const userName = user?.fullName || user?.userName || "User";
+  const userBalance = user?.balance || 0;
 
   return (
     <div className="p-4 md:p-6 max-w-6xl mx-auto">
       {/* Dashboard header */}
       <div className="mb-6 flex justify-between items-center">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-sm md:text-base text-gray-600">Welcome, Abdulsalam</p>
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900">
+            Dashboard
+          </h1>
+          <p className="text-sm md:text-base text-gray-600">
+            Welcome, {userLoading ? "Loading..." : userName}
+          </p>
         </div>
         <div className="flex items-center gap-2">
           {/* Notification icon for mobile */}
           <div className="md:hidden">
-            <Link href="/notifications-management" className="p-2 text-gray-500 hover:text-indigo-600 transition-colors rounded-md hover:bg-gray-100">
+            <Link
+              href="/notifications-management"
+              className="p-2 text-gray-500 hover:text-indigo-600 transition-colors rounded-md hover:bg-gray-100"
+            >
               <Bell className="w-5 h-5" />
             </Link>
           </div>
@@ -121,13 +127,15 @@ export default function Dashboard() {
           <div
             className="absolute inset-0 bg-repeat"
             style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fillRule='evenodd'%3E%3Cg fill='%23ffffff' fillOpacity='0.2'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fillRule='evenodd'%3E%3Cg fill='%23ffffff' fillOpacity='0.2'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zM36 6V2h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
             }}
           />
         </div>
         <div className="flex justify-between items-start mb-4 md:mb-8">
           <div className="flex items-center">
-            <span className="font-medium text-sm md:text-base">Current Balance</span>
+            <span className="font-medium text-sm md:text-base">
+              Current Balance
+            </span>
             <svg
               className="ml-2 w-4 h-4 md:w-5 md:h-5"
               viewBox="0 0 24 24"
@@ -147,14 +155,23 @@ export default function Dashboard() {
               />
             </svg>
           </div>
-          <Link href="/transactions" className="flex items-center text-indigo-100 hover:text-white text-xs md:text-sm transition-colors">
+          <Link
+            href="/transactions"
+            className="flex items-center text-indigo-100 hover:text-white text-xs md:text-sm transition-colors"
+          >
             <span>Transaction History</span>
             <ArrowRight className="ml-1 w-3 h-3 md:w-4 md:h-4" />
           </Link>
         </div>
         <div className="flex flex-col md:flex-row md:justify-between md:items-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-4 md:mb-0">
-            ₦500<span className="text-indigo-200">.85</span>
+            ₦
+            {userLoading
+              ? "..."
+              : userBalance.toLocaleString("en-NG", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
           </h2>
           <button className="bg-white text-indigo-600 px-4 py-2 rounded-md text-sm font-medium flex items-center justify-center w-full md:w-auto hover:bg-gray-50 transition-colors shadow-sm">
             <CreditCard className="mr-2 w-4 h-4" />
@@ -174,7 +191,9 @@ export default function Dashboard() {
             <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 mb-1 md:mb-3">
               <service.icon className="w-4 h-4 md:w-5 md:h-5" />
             </div>
-            <span className="text-xs md:text-sm font-medium text-center">{service.name}</span>
+            <span className="text-xs md:text-sm font-medium text-center">
+              {service.name}
+            </span>
           </Link>
         ))}
       </div>
@@ -182,36 +201,80 @@ export default function Dashboard() {
       {/* Recent Transactions */}
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
         <div className="flex justify-between items-center p-3 md:p-4 border-b border-gray-200">
-          <h3 className="text-sm md:text-base font-medium">Recent Transactions</h3>
-          <Link href="/transactions" className="text-xs md:text-sm text-gray-500 flex items-center hover:text-indigo-600 transition-colors">
+          <h3 className="text-sm md:text-base font-medium">
+            Recent Transactions
+          </h3>
+          <Link
+            href="/transactions"
+            className="text-xs md:text-sm text-gray-500 flex items-center hover:text-indigo-600 transition-colors"
+          >
             View all
             <ArrowRight className="ml-1 w-3 h-3 md:w-4 md:h-4" />
           </Link>
         </div>
         <div className="divide-y divide-gray-200">
-          {transactions.map((transaction) => (
-            <div key={transaction.id} className="p-3 md:p-4 flex items-center justify-between hover:bg-gray-50 transition-colors cursor-pointer">
-              <div className="flex items-center">
-                <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 mr-3">
-                  <transaction.icon className="w-4 h-4 md:w-5 md:h-5" />
+          {transactionsLoading ? (
+            // Loading skeleton
+            Array.from({ length: 4 }).map((_, index) => (
+              <div
+                key={index}
+                className="p-3 md:p-4 flex items-center justify-between animate-pulse"
+              >
+                <div className="flex items-center">
+                  <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gray-200 flex items-center justify-center mr-3"></div>
+                  <div>
+                    <div className="h-4 bg-gray-200 rounded w-24 mb-1"></div>
+                    <div className="h-3 bg-gray-200 rounded w-32"></div>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm md:text-base font-medium">{transaction.type}</p>
-                  <p className="text-xs md:text-sm text-gray-500">{transaction.description}</p>
+                <div className="text-right">
+                  <div className="h-4 bg-gray-200 rounded w-16 mb-1"></div>
+                  <div className="h-3 bg-gray-200 rounded w-12"></div>
                 </div>
               </div>
-              <div className="text-right">
-                <p
-                  className={`text-sm md:text-base font-medium ${transaction.amount > 0 ? "text-green-600" : "text-red-600"}`}
-                >
-                  {transaction.amount > 0 ? `+₦${Math.abs(transaction.amount)}` : `-₦${Math.abs(transaction.amount)}`}
-                </p>
-                <p className="text-xs md:text-sm text-gray-500">{transaction.time}</p>
+            ))
+          ) : transactions.length > 0 ? (
+            transactions.map((transaction) => (
+              <div
+                key={transaction.id}
+                className="p-3 md:p-4 flex items-center justify-between hover:bg-gray-50 transition-colors cursor-pointer"
+              >
+                <div className="flex items-center">
+                  <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 mr-3">
+                    <transaction.icon className="w-4 h-4 md:w-5 md:h-5" />
+                  </div>
+                  <div>
+                    <p className="text-sm md:text-base font-medium">
+                      {transaction.type}
+                    </p>
+                    <p className="text-xs md:text-sm text-gray-500">
+                      {transaction.description}
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p
+                    className={`text-sm md:text-base font-medium ${
+                      transaction.amount > 0 ? "text-green-600" : "text-red-600"
+                    }`}
+                  >
+                    {transaction.amount > 0
+                      ? `+₦${Math.abs(transaction.amount)}`
+                      : `-₦${Math.abs(transaction.amount)}`}
+                  </p>
+                  <p className="text-xs md:text-sm text-gray-500">
+                    {transaction.time}
+                  </p>
+                </div>
               </div>
+            ))
+          ) : (
+            <div className="p-8 text-center text-gray-500">
+              <p>No transactions found</p>
             </div>
-          ))}
+          )}
         </div>
       </div>
     </div>
-  )
+  );
 }

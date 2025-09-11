@@ -1,40 +1,73 @@
-import { useQuery, useMutation, useQueryClient, UseQueryOptions, UseMutationOptions } from '@tanstack/react-query'
-import { ApiService } from '../api/api-service'
 import {
-  // User types
-  LoginRequest, LoginResponse, RegisterRequest, RegisterResponse,
-  UpdateUserRequest, UpdateUserResponse, DeleteUserResponse, UpgradeUserResponse,
-  RequestPasswordResetRequest, RequestPasswordResetResponse,
-  ResetPasswordRequest, ResetPasswordResponse, ChangePasswordRequest, ChangePasswordResponse,
-  
+  useMutation,
+  UseMutationOptions,
+  useQuery,
+  useQueryClient,
+  UseQueryOptions,
+} from "@tanstack/react-query";
+import { ApiService } from "../api/api-service";
+import { setAuthToken } from "../api/infrastructure/client";
+import {
   // Contact types
-  AddContactRequest, AddContactResponse, UpdateContactRequest, UpdateContactResponse,
-  DeleteContactResponse, GetContactsResponse,
-  
-  // Buy service types
-  BuyDataRequest, BuyDataResponse, BuyAirtimeRequest, BuyAirtimeResponse,
-  ValidateMeterRequest, ValidateMeterResponse, BuyElectricityRequest, BuyElectricityResponse,
-  GetDiscosResponse,
-  
-  // Data plan types
-  GetDataPlanPricesResponse, AddDataPlanRequest, AddDataPlanResponse,
-  UpdateDataPlanRequest, UpdateDataPlanResponse, DeleteDataPlanResponse, GetDataPlansResponse,
-  
-  // Transaction types
-  TransactionSearchParams, GetTransactionsResponse, SearchTransactionsResponse,
-  
-  // Fund transfer types
-  TransferFundRequest, TransferFundResponse,
-  
-  // Admin types
-  GenerateCouponRequest, GenerateCouponResponse, RefundRequest, RefundResponse,
-  
-  // Price types
-  GetPricesRequest, GetPricesResponse,
-  
+  AddContactRequest,
+  AddContactResponse,
+  AddDataPlanRequest,
+  AddDataPlanResponse,
   // Common types
-  ApiSuccessResponse, NetworkId
-} from '../types'
+  ApiSuccessResponse,
+  BuyAirtimeRequest,
+  BuyAirtimeResponse,
+  // Buy service types
+  BuyDataRequest,
+  BuyDataResponse,
+  BuyElectricityRequest,
+  BuyElectricityResponse,
+  ChangePasswordRequest,
+  ChangePasswordResponse,
+  DeleteContactResponse,
+  DeleteDataPlanResponse,
+  DeleteUserResponse,
+  // Admin types
+  GenerateCouponRequest,
+  GenerateCouponResponse,
+  GetContactsResponse,
+  // Data plan types
+  GetDataPlanPricesResponse,
+  GetDataPlansResponse,
+  GetDiscosResponse,
+  // Price types
+  GetPricesRequest,
+  GetPricesResponse,
+  GetTransactionsResponse,
+  GetUsersResponse,
+  // User types
+  LoginRequest,
+  LoginResponse,
+  NetworkId,
+  RefundRequest,
+  RefundResponse,
+  RegisterRequest,
+  RegisterResponse,
+  RequestPasswordResetRequest,
+  RequestPasswordResetResponse,
+  ResetPasswordRequest,
+  ResetPasswordResponse,
+  SearchTransactionsResponse,
+  // Transaction types
+  TransactionSearchParams,
+  // Fund transfer types
+  TransferFundRequest,
+  TransferFundResponse,
+  UpdateContactRequest,
+  UpdateContactResponse,
+  UpdateDataPlanRequest,
+  UpdateDataPlanResponse,
+  UpdateUserRequest,
+  UpdateUserResponse,
+  UpgradeUserResponse,
+  ValidateMeterRequest,
+  ValidateMeterResponse,
+} from "../types";
 
 // ============================================================================
 // QUERY KEYS
@@ -43,163 +76,213 @@ import {
 export const queryKeys = {
   // User queries
   user: {
-    profile: ['user', 'profile'] as const,
-    all: ['users'] as const,
-    byId: (id: string) => ['user', id] as const,
+    profile: ["user", "profile"] as const,
+    all: ["users"] as const,
+    byId: (id: string) => ["user", id] as const,
   },
-  
+
   // Contact queries
   contacts: {
-    all: ['contacts'] as const,
-    byId: (id: string) => ['contact', id] as const,
+    all: ["contacts"] as const,
+    byId: (id: string) => ["contact", id] as const,
   },
-  
+
   // Data plan queries
   dataPlans: {
-    all: ['dataPlans'] as const,
-    byNetwork: (network: NetworkId) => ['dataPlans', 'network', network] as const,
-    byId: (id: string) => ['dataPlan', id] as const,
+    all: ["dataPlans"] as const,
+    byNetwork: (network: NetworkId) =>
+      ["dataPlans", "network", network] as const,
+    byId: (id: string) => ["dataPlan", id] as const,
   },
-  
+
   // Transaction queries
   transactions: {
-    all: ['transactions'] as const,
-    search: (params: TransactionSearchParams) => ['transactions', 'search', params] as const,
+    all: ["transactions"] as const,
+    search: (params: TransactionSearchParams) =>
+      ["transactions", "search", params] as const,
   },
-  
+
   // Disco queries
   discos: {
-    all: ['discos'] as const,
+    all: ["discos"] as const,
   },
-  
+
   // Price queries
   prices: {
-    all: ['prices'] as const,
-    byNetwork: (network?: string) => ['prices', 'network', network] as const,
+    all: ["prices"] as const,
+    byNetwork: (network?: string) => ["prices", "network", network] as const,
   },
-} as const
+} as const;
 
 // ============================================================================
 // USER AUTHENTICATION & MANAGEMENT HOOKS
 // ============================================================================
 
 // User Profile Query
-export const useUserProfile = (options?: UseQueryOptions<ApiSuccessResponse<any>>) => {
+export const useUserProfile = (
+  options?: UseQueryOptions<ApiSuccessResponse<any>>
+) => {
   return useQuery({
     queryKey: queryKeys.user.profile,
     queryFn: () => ApiService.getUserProfile(),
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
+    enabled:
+      typeof window !== "undefined" && !!localStorage.getItem("auth_token"),
     ...options,
-  })
-}
+  });
+};
+
+// Get All Users Query (Admin only)
+export const useUsers = (options?: UseQueryOptions<GetUsersResponse>) => {
+  return useQuery({
+    queryKey: queryKeys.user.all,
+    queryFn: () => ApiService.getAllUsers(),
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    gcTime: 5 * 60 * 1000, // 5 minutes
+    enabled:
+      typeof window !== "undefined" && !!localStorage.getItem("auth_token"),
+    ...options,
+  });
+};
 
 // User Login Mutation
-export const useLogin = (options?: UseMutationOptions<LoginResponse, Error, LoginRequest>) => {
-  const queryClient = useQueryClient()
-  
+export const useLogin = (
+  options?: UseMutationOptions<LoginResponse, Error, LoginRequest>
+) => {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: (request: LoginRequest) => ApiService.login(request),
     onSuccess: (data) => {
+      // Set auth token using the proper function
+      setAuthToken(data.token);
+
       // Invalidate user profile to refetch with new token
-      queryClient.invalidateQueries({ queryKey: queryKeys.user.profile })
-      
-      // Set auth token
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('auth_token', data.token)
-      }
+      queryClient.invalidateQueries({ queryKey: queryKeys.user.profile });
     },
     ...options,
-  })
-}
+  });
+};
 
 // User Registration Mutation
-export const useRegister = (options?: UseMutationOptions<RegisterResponse, Error, RegisterRequest>) => {
-  const queryClient = useQueryClient()
-  
+export const useRegister = (
+  options?: UseMutationOptions<RegisterResponse, Error, RegisterRequest>
+) => {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: (request: RegisterRequest) => ApiService.register(request),
     onSuccess: (data) => {
+      // Set auth token using the proper function
+      setAuthToken(data.token);
+
       // Invalidate user profile to refetch with new token
-      queryClient.invalidateQueries({ queryKey: queryKeys.user.profile })
-      
-      // Set auth token
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('auth_token', data.token)
-      }
+      queryClient.invalidateQueries({ queryKey: queryKeys.user.profile });
     },
     ...options,
-  })
-}
+  });
+};
 
 // Update User Mutation
-export const useUpdateUser = (options?: UseMutationOptions<UpdateUserResponse, Error, { id: string; request: UpdateUserRequest }>) => {
-  const queryClient = useQueryClient()
-  
+export const useUpdateUser = (
+  options?: UseMutationOptions<
+    UpdateUserResponse,
+    Error,
+    { id: string; request: UpdateUserRequest }
+  >
+) => {
+  const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: ({ id, request }: { id: string; request: UpdateUserRequest }) => 
+    mutationFn: ({ id, request }: { id: string; request: UpdateUserRequest }) =>
       ApiService.updateUser(id, request),
     onSuccess: (_, { id }) => {
       // Invalidate user profile and specific user
-      queryClient.invalidateQueries({ queryKey: queryKeys.user.profile })
-      queryClient.invalidateQueries({ queryKey: queryKeys.user.byId(id) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.user.profile });
+      queryClient.invalidateQueries({ queryKey: queryKeys.user.byId(id) });
     },
     ...options,
-  })
-}
+  });
+};
 
 // Delete User Mutation
-export const useDeleteUser = (options?: UseMutationOptions<DeleteUserResponse, Error, string>) => {
-  const queryClient = useQueryClient()
-  
+export const useDeleteUser = (
+  options?: UseMutationOptions<DeleteUserResponse, Error, string>
+) => {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: (id: string) => ApiService.deleteUser(id),
     onSuccess: (_, id) => {
       // Remove user from cache
-      queryClient.removeQueries({ queryKey: queryKeys.user.byId(id) })
-      queryClient.invalidateQueries({ queryKey: queryKeys.user.all })
+      queryClient.removeQueries({ queryKey: queryKeys.user.byId(id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.user.all });
     },
     ...options,
-  })
-}
+  });
+};
 
 // Upgrade User Mutation
-export const useUpgradeUser = (options?: UseMutationOptions<UpgradeUserResponse, Error, void>) => {
-  const queryClient = useQueryClient()
-  
+export const useUpgradeUser = (
+  options?: UseMutationOptions<UpgradeUserResponse, Error, void>
+) => {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: () => ApiService.upgradeUser(),
     onSuccess: () => {
       // Invalidate user profile
-      queryClient.invalidateQueries({ queryKey: queryKeys.user.profile })
+      queryClient.invalidateQueries({ queryKey: queryKeys.user.profile });
     },
     ...options,
-  })
-}
+  });
+};
 
 // Request Password Reset Mutation
-export const useRequestPasswordReset = (options?: UseMutationOptions<RequestPasswordResetResponse, Error, RequestPasswordResetRequest>) => {
+export const useRequestPasswordReset = (
+  options?: UseMutationOptions<
+    RequestPasswordResetResponse,
+    Error,
+    RequestPasswordResetRequest
+  >
+) => {
   return useMutation({
-    mutationFn: (request: RequestPasswordResetRequest) => ApiService.requestPasswordReset(request),
+    mutationFn: (request: RequestPasswordResetRequest) =>
+      ApiService.requestPasswordReset(request),
     ...options,
-  })
-}
+  });
+};
 
 // Reset Password Mutation
-export const useResetPassword = (options?: UseMutationOptions<ResetPasswordResponse, Error, ResetPasswordRequest>) => {
+export const useResetPassword = (
+  options?: UseMutationOptions<
+    ResetPasswordResponse,
+    Error,
+    ResetPasswordRequest
+  >
+) => {
   return useMutation({
-    mutationFn: (request: ResetPasswordRequest) => ApiService.resetPassword(request),
+    mutationFn: (request: ResetPasswordRequest) =>
+      ApiService.resetPassword(request),
     ...options,
-  })
-}
+  });
+};
 
 // Change Password Mutation
-export const useChangePassword = (options?: UseMutationOptions<ChangePasswordResponse, Error, ChangePasswordRequest>) => {
+export const useChangePassword = (
+  options?: UseMutationOptions<
+    ChangePasswordResponse,
+    Error,
+    ChangePasswordRequest
+  >
+) => {
   return useMutation({
-    mutationFn: (request: ChangePasswordRequest) => ApiService.changePassword(request),
+    mutationFn: (request: ChangePasswordRequest) =>
+      ApiService.changePassword(request),
     ...options,
-  })
-}
+  });
+};
 
 // ============================================================================
 // CONTACT MANAGEMENT HOOKS
@@ -213,87 +296,106 @@ export const useContacts = (options?: UseQueryOptions<GetContactsResponse>) => {
     staleTime: 2 * 60 * 1000, // 2 minutes
     gcTime: 5 * 60 * 1000, // 5 minutes
     ...options,
-  })
-}
+  });
+};
 
 // Add Contact Mutation
-export const useAddContact = (options?: UseMutationOptions<AddContactResponse, Error, AddContactRequest>) => {
-  const queryClient = useQueryClient()
-  
+export const useAddContact = (
+  options?: UseMutationOptions<AddContactResponse, Error, AddContactRequest>
+) => {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: (request: AddContactRequest) => ApiService.addContact(request),
     onSuccess: () => {
       // Invalidate contacts list
-      queryClient.invalidateQueries({ queryKey: queryKeys.contacts.all })
+      queryClient.invalidateQueries({ queryKey: queryKeys.contacts.all });
     },
     ...options,
-  })
-}
+  });
+};
 
 // Update Contact Mutation
-export const useUpdateContact = (options?: UseMutationOptions<UpdateContactResponse, Error, { id: string; request: UpdateContactRequest }>) => {
-  const queryClient = useQueryClient()
-  
+export const useUpdateContact = (
+  options?: UseMutationOptions<
+    UpdateContactResponse,
+    Error,
+    { id: string; request: UpdateContactRequest }
+  >
+) => {
+  const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: ({ id, request }: { id: string; request: UpdateContactRequest }) => 
-      ApiService.updateContact(id, request),
+    mutationFn: ({
+      id,
+      request,
+    }: {
+      id: string;
+      request: UpdateContactRequest;
+    }) => ApiService.updateContact(id, request),
     onSuccess: (_, { id }) => {
       // Invalidate contacts list and specific contact
-      queryClient.invalidateQueries({ queryKey: queryKeys.contacts.all })
-      queryClient.invalidateQueries({ queryKey: queryKeys.contacts.byId(id) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.contacts.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.contacts.byId(id) });
     },
     ...options,
-  })
-}
+  });
+};
 
 // Delete Contact Mutation
-export const useDeleteContact = (options?: UseMutationOptions<DeleteContactResponse, Error, string>) => {
-  const queryClient = useQueryClient()
-  
+export const useDeleteContact = (
+  options?: UseMutationOptions<DeleteContactResponse, Error, string>
+) => {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: (id: string) => ApiService.deleteContact(id),
     onSuccess: (_, id) => {
       // Remove contact from cache
-      queryClient.removeQueries({ queryKey: queryKeys.contacts.byId(id) })
-      queryClient.invalidateQueries({ queryKey: queryKeys.contacts.all })
+      queryClient.removeQueries({ queryKey: queryKeys.contacts.byId(id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.contacts.all });
     },
     ...options,
-  })
-}
+  });
+};
 
 // ============================================================================
 // BUY SERVICES HOOKS
 // ============================================================================
 
 // Buy Data Mutation
-export const useBuyData = (options?: UseMutationOptions<BuyDataResponse, Error, BuyDataRequest>) => {
-  const queryClient = useQueryClient()
-  
+export const useBuyData = (
+  options?: UseMutationOptions<BuyDataResponse, Error, BuyDataRequest>
+) => {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: (request: BuyDataRequest) => ApiService.buyData(request),
     onSuccess: () => {
       // Invalidate transactions and user profile (balance change)
-      queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all })
-      queryClient.invalidateQueries({ queryKey: queryKeys.user.profile })
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.user.profile });
     },
     ...options,
-  })
-}
+  });
+};
 
 // Buy Airtime Mutation
-export const useBuyAirtime = (options?: UseMutationOptions<BuyAirtimeResponse, Error, BuyAirtimeRequest>) => {
-  const queryClient = useQueryClient()
-  
+export const useBuyAirtime = (
+  options?: UseMutationOptions<BuyAirtimeResponse, Error, BuyAirtimeRequest>
+) => {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: (request: BuyAirtimeRequest) => ApiService.buyAirtime(request),
     onSuccess: () => {
       // Invalidate transactions and user profile (balance change)
-      queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all })
-      queryClient.invalidateQueries({ queryKey: queryKeys.user.profile })
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.user.profile });
     },
     ...options,
-  })
-}
+  });
+};
 
 // Validate Meter Query
 export const useValidateMeter = (
@@ -301,29 +403,36 @@ export const useValidateMeter = (
   options?: UseQueryOptions<ValidateMeterResponse>
 ) => {
   return useQuery({
-    queryKey: ['validateMeter', request],
+    queryKey: ["validateMeter", request],
     queryFn: () => ApiService.validateMeter(request),
     enabled: !!request.meterNumber && !!request.meterId,
     staleTime: 10 * 60 * 1000, // 10 minutes
     gcTime: 30 * 60 * 1000, // 30 minutes
     ...options,
-  })
-}
+  });
+};
 
 // Buy Electricity Mutation
-export const useBuyElectricity = (options?: UseMutationOptions<BuyElectricityResponse, Error, BuyElectricityRequest>) => {
-  const queryClient = useQueryClient()
-  
+export const useBuyElectricity = (
+  options?: UseMutationOptions<
+    BuyElectricityResponse,
+    Error,
+    BuyElectricityRequest
+  >
+) => {
+  const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: (request: BuyElectricityRequest) => ApiService.buyElectricity(request),
+    mutationFn: (request: BuyElectricityRequest) =>
+      ApiService.buyElectricity(request),
     onSuccess: () => {
       // Invalidate transactions and user profile (balance change)
-      queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all })
-      queryClient.invalidateQueries({ queryKey: queryKeys.user.profile })
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.user.profile });
     },
     ...options,
-  })
-}
+  });
+};
 
 // Get Discos Query
 export const useDiscos = (options?: UseQueryOptions<GetDiscosResponse>) => {
@@ -333,8 +442,8 @@ export const useDiscos = (options?: UseQueryOptions<GetDiscosResponse>) => {
     staleTime: 60 * 60 * 1000, // 1 hour
     gcTime: 2 * 60 * 60 * 1000, // 2 hours
     ...options,
-  })
-}
+  });
+};
 
 // ============================================================================
 // DATA PLANS MANAGEMENT HOOKS
@@ -351,80 +460,106 @@ export const useDataPlanPrices = (
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 15 * 60 * 1000, // 15 minutes
     ...options,
-  })
-}
+  });
+};
 
 // Get All Data Plans Query
-export const useDataPlans = (options?: UseQueryOptions<GetDataPlansResponse>) => {
+export const useDataPlans = (
+  options?: UseQueryOptions<GetDataPlansResponse>
+) => {
   return useQuery({
     queryKey: queryKeys.dataPlans.all,
     queryFn: () => ApiService.getDataPlans(),
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 15 * 60 * 1000, // 15 minutes
     ...options,
-  })
-}
+  });
+};
 
 // Add Data Plan Mutation
-export const useAddDataPlan = (options?: UseMutationOptions<AddDataPlanResponse, Error, AddDataPlanRequest>) => {
-  const queryClient = useQueryClient()
-  
+export const useAddDataPlan = (
+  options?: UseMutationOptions<AddDataPlanResponse, Error, AddDataPlanRequest>
+) => {
+  const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: (request: AddDataPlanRequest) => ApiService.addDataPlan(request),
+    mutationFn: (request: AddDataPlanRequest) =>
+      ApiService.addDataPlan(request),
     onSuccess: (_, request) => {
       // Invalidate data plans and specific network plans
-      queryClient.invalidateQueries({ queryKey: queryKeys.dataPlans.all })
-      queryClient.invalidateQueries({ queryKey: queryKeys.dataPlans.byNetwork(request.planNetwork as NetworkId) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.dataPlans.all });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.dataPlans.byNetwork(
+          request.planNetwork as NetworkId
+        ),
+      });
     },
     ...options,
-  })
-}
+  });
+};
 
 // Update Data Plan Mutation
-export const useUpdateDataPlan = (options?: UseMutationOptions<UpdateDataPlanResponse, Error, UpdateDataPlanRequest>) => {
-  const queryClient = useQueryClient()
-  
+export const useUpdateDataPlan = (
+  options?: UseMutationOptions<
+    UpdateDataPlanResponse,
+    Error,
+    UpdateDataPlanRequest
+  >
+) => {
+  const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: (request: UpdateDataPlanRequest) => ApiService.updateDataPlan(request),
+    mutationFn: (request: UpdateDataPlanRequest) =>
+      ApiService.updateDataPlan(request),
     onSuccess: (_, request) => {
       // Invalidate data plans and specific network plans
-      queryClient.invalidateQueries({ queryKey: queryKeys.dataPlans.all })
-      queryClient.invalidateQueries({ queryKey: queryKeys.dataPlans.byNetwork(request.planNetwork as NetworkId) })
-      queryClient.invalidateQueries({ queryKey: queryKeys.dataPlans.byId(request._id) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.dataPlans.all });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.dataPlans.byNetwork(
+          request.planNetwork as NetworkId
+        ),
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.dataPlans.byId(request._id),
+      });
     },
     ...options,
-  })
-}
+  });
+};
 
 // Delete Data Plan Mutation
-export const useDeleteDataPlan = (options?: UseMutationOptions<DeleteDataPlanResponse, Error, string>) => {
-  const queryClient = useQueryClient()
-  
+export const useDeleteDataPlan = (
+  options?: UseMutationOptions<DeleteDataPlanResponse, Error, string>
+) => {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: (planId: string) => ApiService.deleteDataPlan(planId),
     onSuccess: (_, planId) => {
       // Remove plan from cache and invalidate lists
-      queryClient.removeQueries({ queryKey: queryKeys.dataPlans.byId(planId) })
-      queryClient.invalidateQueries({ queryKey: queryKeys.dataPlans.all })
+      queryClient.removeQueries({ queryKey: queryKeys.dataPlans.byId(planId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dataPlans.all });
     },
     ...options,
-  })
-}
+  });
+};
 
 // ============================================================================
 // TRANSACTION HOOKS
 // ============================================================================
 
 // Get All Transactions Query
-export const useTransactions = (options?: UseQueryOptions<GetTransactionsResponse>) => {
+export const useTransactions = (
+  options?: UseQueryOptions<GetTransactionsResponse>
+) => {
   return useQuery({
     queryKey: queryKeys.transactions.all,
     queryFn: () => ApiService.getAllTransactions(),
     staleTime: 1 * 60 * 1000, // 1 minute
     gcTime: 5 * 60 * 1000, // 5 minutes
     ...options,
-  })
-}
+  });
+};
 
 // Search Transactions Query
 export const useSearchTransactions = (
@@ -438,70 +573,110 @@ export const useSearchTransactions = (
     staleTime: 1 * 60 * 1000, // 1 minute
     gcTime: 5 * 60 * 1000, // 5 minutes
     ...options,
-  })
-}
+  });
+};
 
 // ============================================================================
 // FUND TRANSFER HOOKS
 // ============================================================================
 
 // Transfer Fund to User Mutation
-export const useTransferFundToUser = (options?: UseMutationOptions<TransferFundResponse, Error, { request: TransferFundRequest; userToken: string }>) => {
-  const queryClient = useQueryClient()
-  
+export const useTransferFundToUser = (
+  options?: UseMutationOptions<
+    TransferFundResponse,
+    Error,
+    { request: TransferFundRequest; userToken: string }
+  >
+) => {
+  const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: ({ request, userToken }: { request: TransferFundRequest; userToken: string }) => 
-      ApiService.transferFundToUser(request, userToken),
+    mutationFn: ({
+      request,
+      userToken,
+    }: {
+      request: TransferFundRequest;
+      userToken: string;
+    }) => ApiService.transferFundToUser(request, userToken),
     onSuccess: () => {
       // Invalidate transactions and user profile (balance change)
-      queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all })
-      queryClient.invalidateQueries({ queryKey: queryKeys.user.profile })
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.user.profile });
     },
     ...options,
-  })
-}
+  });
+};
 
 // Admin Transfer Fund Mutation
-export const useAdminTransferFund = (options?: UseMutationOptions<TransferFundResponse, Error, { request: TransferFundRequest; adminToken: string }>) => {
-  const queryClient = useQueryClient()
-  
+export const useAdminTransferFund = (
+  options?: UseMutationOptions<
+    TransferFundResponse,
+    Error,
+    { request: TransferFundRequest; adminToken: string }
+  >
+) => {
+  const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: ({ request, adminToken }: { request: TransferFundRequest; adminToken: string }) => 
-      ApiService.adminTransferFund(request, adminToken),
+    mutationFn: ({
+      request,
+      adminToken,
+    }: {
+      request: TransferFundRequest;
+      adminToken: string;
+    }) => ApiService.adminTransferFund(request, adminToken),
     onSuccess: () => {
       // Invalidate transactions
-      queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all })
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
     },
     ...options,
-  })
-}
+  });
+};
 
 // ============================================================================
 // ADMIN OPERATIONS HOOKS
 // ============================================================================
 
 // Generate Coupon Mutation
-export const useGenerateCoupon = (options?: UseMutationOptions<GenerateCouponResponse, Error, GenerateCouponRequest>) => {
+export const useGenerateCoupon = (
+  options?: UseMutationOptions<
+    GenerateCouponResponse,
+    Error,
+    GenerateCouponRequest
+  >
+) => {
   return useMutation({
-    mutationFn: (request: GenerateCouponRequest) => ApiService.generateCoupon(request),
+    mutationFn: (request: GenerateCouponRequest) =>
+      ApiService.generateCoupon(request),
     ...options,
-  })
-}
+  });
+};
 
 // Process Refund Mutation
-export const useProcessRefund = (options?: UseMutationOptions<RefundResponse, Error, { transactionId: string; request: RefundRequest }>) => {
-  const queryClient = useQueryClient()
-  
+export const useProcessRefund = (
+  options?: UseMutationOptions<
+    RefundResponse,
+    Error,
+    { transactionId: string; request: RefundRequest }
+  >
+) => {
+  const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: ({ transactionId, request }: { transactionId: string; request: RefundRequest }) => 
-      ApiService.processRefund(transactionId, request),
+    mutationFn: ({
+      transactionId,
+      request,
+    }: {
+      transactionId: string;
+      request: RefundRequest;
+    }) => ApiService.processRefund(transactionId, request),
     onSuccess: () => {
       // Invalidate transactions
-      queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all })
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
     },
     ...options,
-  })
-}
+  });
+};
 
 // ============================================================================
 // PRICE HOOKS
@@ -518,8 +693,8 @@ export const usePrices = (
     staleTime: 10 * 60 * 1000, // 10 minutes
     gcTime: 30 * 60 * 1000, // 30 minutes
     ...options,
-  })
-}
+  });
+};
 
 // ============================================================================
 // UTILITY HOOKS
@@ -528,24 +703,24 @@ export const usePrices = (
 // Network Name Query (for display purposes)
 export const useNetworkName = (networkId: NetworkId) => {
   return useQuery({
-    queryKey: ['networkName', networkId],
+    queryKey: ["networkName", networkId],
     queryFn: () => Promise.resolve(ApiService.getNetworkName(networkId)),
     staleTime: Infinity, // Never stale
     gcTime: Infinity, // Never garbage collected
     enabled: !!networkId,
-  })
-}
+  });
+};
 
 // Network ID Query (for conversion purposes)
 export const useNetworkId = (networkName: string) => {
   return useQuery({
-    queryKey: ['networkId', networkName],
+    queryKey: ["networkId", networkName],
     queryFn: () => Promise.resolve(ApiService.getNetworkId(networkName)),
     staleTime: Infinity, // Never stale
     gcTime: Infinity, // Never garbage collected
     enabled: !!networkName,
-  })
-}
+  });
+};
 
 // ============================================================================
 // BULK OPERATIONS HOOKS
@@ -553,30 +728,30 @@ export const useNetworkId = (networkName: string) => {
 
 // Bulk Invalidate Queries Hook
 export const useBulkInvalidate = () => {
-  const queryClient = useQueryClient()
-  
+  const queryClient = useQueryClient();
+
   const invalidateAll = () => {
-    queryClient.invalidateQueries()
-  }
-  
+    queryClient.invalidateQueries();
+  };
+
   const invalidateUserData = () => {
-    queryClient.invalidateQueries({ queryKey: queryKeys.user.profile })
-    queryClient.invalidateQueries({ queryKey: queryKeys.contacts.all })
-    queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all })
-  }
-  
+    queryClient.invalidateQueries({ queryKey: queryKeys.user.profile });
+    queryClient.invalidateQueries({ queryKey: queryKeys.contacts.all });
+    queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
+  };
+
   const invalidateServiceData = () => {
-    queryClient.invalidateQueries({ queryKey: queryKeys.dataPlans.all })
-    queryClient.invalidateQueries({ queryKey: queryKeys.prices.all })
-    queryClient.invalidateQueries({ queryKey: queryKeys.discos.all })
-  }
-  
+    queryClient.invalidateQueries({ queryKey: queryKeys.dataPlans.all });
+    queryClient.invalidateQueries({ queryKey: queryKeys.prices.all });
+    queryClient.invalidateQueries({ queryKey: queryKeys.discos.all });
+  };
+
   return {
     invalidateAll,
     invalidateUserData,
     invalidateServiceData,
-  }
-}
+  };
+};
 
 // ============================================================================
 // OPTIMISTIC UPDATES HOOKS
@@ -584,42 +759,42 @@ export const useBulkInvalidate = () => {
 
 // Optimistic Update User Hook
 export const useOptimisticUpdateUser = () => {
-  const queryClient = useQueryClient()
-  
+  const queryClient = useQueryClient();
+
   const optimisticUpdate = (id: string, updates: UpdateUserRequest) => {
     queryClient.setQueryData(queryKeys.user.byId(id), (old: any) => ({
       ...old,
       ...updates,
-    }))
-  }
-  
+    }));
+  };
+
   const rollbackUpdate = (id: string) => {
-    queryClient.invalidateQueries({ queryKey: queryKeys.user.byId(id) })
-  }
-  
+    queryClient.invalidateQueries({ queryKey: queryKeys.user.byId(id) });
+  };
+
   return {
     optimisticUpdate,
     rollbackUpdate,
-  }
-}
+  };
+};
 
 // Optimistic Update Contact Hook
 export const useOptimisticUpdateContact = () => {
-  const queryClient = useQueryClient()
-  
+  const queryClient = useQueryClient();
+
   const optimisticUpdate = (id: string, updates: UpdateContactRequest) => {
     queryClient.setQueryData(queryKeys.contacts.byId(id), (old: any) => ({
       ...old,
       ...updates,
-    }))
-  }
-  
+    }));
+  };
+
   const rollbackUpdate = (id: string) => {
-    queryClient.invalidateQueries({ queryKey: queryKeys.contacts.byId(id) })
-  }
-  
+    queryClient.invalidateQueries({ queryKey: queryKeys.contacts.byId(id) });
+  };
+
   return {
     optimisticUpdate,
     rollbackUpdate,
-  }
-}
+  };
+};

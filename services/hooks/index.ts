@@ -6,26 +6,76 @@
 // ============================================================================
 // AUTHENTICATION & USER MANAGEMENT
 // ============================================================================
-export { useLogout } from './useAuth'  // Only export useLogout from useAuth
-export * from './useUsers'     // User CRUD operations, management
+export * from "./useAuth"; // All auth hooks including useUserProfile, useLogin, useLogout
+export * from "./useUsers"; // User CRUD operations, management
 
 // ============================================================================
 // API DATA HOOKS (TanStack Query)
 // ============================================================================
-export * from './useApiQueries'    // General API endpoints (comprehensive)
-export * from './useFundTransfer'  // Fund transfer operations
+// Export specific hooks from useApiQueries to avoid conflicts with useAuth
+export {
+  // Query keys
+  queryKeys,
+  useAddContact,
+  useAddDataPlan,
+  useAdminTransferFund,
+  // Bulk operations
+  useBulkInvalidate,
+  useBuyAirtime,
+  // Buy service hooks
+  useBuyData,
+  useBuyElectricity,
+  useChangePassword,
+  // Contact hooks
+  useContacts,
+  // Data plan hooks
+  useDataPlanPrices,
+  useDataPlans,
+  useDeleteContact,
+  useDeleteDataPlan,
+  useDeleteUser,
+  useDiscos,
+  // Admin hooks
+  useGenerateCoupon,
+  useNetworkId,
+  // Utility hooks
+  useNetworkName,
+  useOptimisticUpdateContact,
+  // Optimistic updates
+  useOptimisticUpdateUser,
+  // Price hooks
+  usePrices,
+  useProcessRefund,
+  useRequestPasswordReset,
+  useResetPassword,
+  useSearchTransactions,
+  // Transaction hooks
+  useTransactions,
+  // Fund transfer hooks
+  useTransferFundToUser,
+  useUpdateContact,
+  useUpdateDataPlan,
+  useUpdateUser,
+  useUpgradeUser,
+  // User hooks
+  useUserProfile,
+  useUsers,
+  useValidateMeter,
+} from "./useApiQueries";
+
+export * from "./useFundTransfer"; // Fund transfer operations
 
 // ============================================================================
 // REACT QUERY UTILITIES
 // Re-export core React Query hooks for convenience
 // ============================================================================
-export { 
-  useQuery, 
-  useMutation, 
-  useQueryClient,
+export {
   useInfiniteQuery,
-  useQueries
-} from '@tanstack/react-query'
+  useMutation,
+  useQueries,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 
 // ============================================================================
 // HOOK CATEGORIES FOR EASY IMPORTS
@@ -33,19 +83,19 @@ export {
 
 // Authentication & User Management
 export const authHooks = {
-  useAuth: () => import('./useAuth').then(m => m),
-  useUsers: () => import('./useUsers').then(m => m),
-}
+  useAuth: () => import("./useAuth").then((m) => m),
+  useUsers: () => import("./useUsers").then((m) => m),
+};
 
 // Data Fetching & Management
 export const dataHooks = {
-  useApiQueries: () => import('./useApiQueries').then(m => m),
-  useDataPlans: () => import('./useDataPlans').then(m => m),
-  useFundTransfer: () => import('./useFundTransfer').then(m => m),
-}
+  useApiQueries: () => import("./useApiQueries").then((m) => m),
+  useDataPlans: () => import("./useDataPlans").then((m) => m),
+  useFundTransfer: () => import("./useFundTransfer").then((m) => m),
+};
 
 // All hooks in one object
 export const allHooks = {
   ...authHooks,
   ...dataHooks,
-} 
+};

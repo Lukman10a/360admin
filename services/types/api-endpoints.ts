@@ -8,160 +8,167 @@
 // ============================================================================
 
 export interface LoginRequest {
-  userName?: string // Can be email or username
-  email?: string // Can be email or username
-  password: string
+  userName?: string; // Can be email or username
+  email?: string; // Can be email or username
+  password: string;
 }
 
 export interface LoginResponse {
-  status: number
-  status_code: string
-  token: string
-  data: User
-  msg: string
+  status: number;
+  status_code: string;
+  token: string;
+  data: User;
+  msg: string;
 }
 
 export interface RegisterRequest {
-  email: string
-  password: string
-  passwordCheck: string
-  userName: string
-  referredBy?: string
-  phoneNumber: string
+  email: string;
+  password: string;
+  passwordCheck: string;
+  userName: string;
+  referredBy?: string;
+  phoneNumber: string;
 }
 
 export interface RegisterResponse {
-  status: number
-  status_code: string
-  token: string
-  data: User
-  msg: string
+  status: number;
+  status_code: string;
+  token: string;
+  data: User;
+  msg: string;
 }
 
 export interface User {
-  _id: string
-  email: string
-  userName: string
-  phoneNumber: string
-  balance: number
-  apiToken: string
-  userType: string
-  isPartner: boolean
-  isSpecial: boolean
-  fullName: string
-  bvn: string
-  nin: string
-  referredBy: string
-  referrals: any[]
-  accountNumbers: AccountNumber[]
-  specialPrices: any[]
-  createdAt: string
-  updatedAt: string
-  __v: number
+  _id: string;
+  email: string;
+  userName: string;
+  phoneNumber: string;
+  balance: number;
+  apiToken: string;
+  userType: string;
+  isPartner: boolean;
+  isSpecial: boolean;
+  fullName: string;
+  bvn: string;
+  nin: string;
+  referredBy: string;
+  referrals: any[];
+  accountNumbers: AccountNumber[];
+  specialPrices: any[];
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
 }
 
 export interface AccountNumber {
-  accountNumber: string
-  bankName: string
+  accountNumber: string;
+  bankName: string;
 }
 
 export interface UpdateUserRequest {
-  email?: string
-  userName?: string
-  referredBy?: string
-  phoneNumber?: string
-  fullName?: string
-  bvn?: string
-  nin?: string
+  email?: string;
+  userName?: string;
+  referredBy?: string;
+  phoneNumber?: string;
+  fullName?: string;
+  bvn?: string;
+  nin?: string;
 }
 
 export interface UpdateSubscriberRequest {
-  email?: string
-  userName?: string
-  referredBy?: string
-  phoneNumber?: string
-  fullName?: string
-  subscriptionType?: 'Basic' | 'Premium' | 'Enterprise'
-  status?: 'Active' | 'Inactive' | 'Suspended'
+  email?: string;
+  userName?: string;
+  referredBy?: string;
+  phoneNumber?: string;
+  fullName?: string;
+  subscriptionType?: "Basic" | "Premium" | "Enterprise";
+  status?: "Active" | "Inactive" | "Suspended";
 }
 
 export interface CreateSystemUserRequest {
-  email: string
-  userName: string
-  phoneNumber: string
-  role: 'Super Admin' | 'Admin'
-  password: string
-  fullName: string
+  email: string;
+  userName: string;
+  phoneNumber: string;
+  role: "Super Admin" | "Admin";
+  password: string;
+  fullName: string;
 }
 
 export interface CreateUserRequest {
-  email: string
-  userName: string
-  phoneNumber: string
-  role: 'Super Admin' | 'Admin' | 'User' | 'Agent' | 'Vendor'
-  password: string
-  fullName: string
-  referredBy?: string
+  email: string;
+  userName: string;
+  phoneNumber: string;
+  role: "Super Admin" | "Admin" | "User" | "Agent" | "Vendor";
+  password: string;
+  fullName: string;
+  referredBy?: string;
 }
 
 export interface UpdateSystemUserRequest {
-  email?: string
-  userName?: string
-  phoneNumber?: string
-  role?: 'Super Admin' | 'Admin'
-  fullName?: string
-  status?: 'Active' | 'Inactive' | 'Suspended'
+  email?: string;
+  userName?: string;
+  phoneNumber?: string;
+  role?: "Super Admin" | "Admin";
+  fullName?: string;
+  status?: "Active" | "Inactive" | "Suspended";
 }
 
 export interface CreateSubscriberRequest {
-  email: string
-  userName: string
-  phoneNumber: string
-  password: string
-  fullName: string
-  subscriptionType?: 'Basic' | 'Premium' | 'Enterprise'
-  referredBy?: string
+  email: string;
+  userName: string;
+  phoneNumber: string;
+  password: string;
+  fullName: string;
+  subscriptionType?: "Basic" | "Premium" | "Enterprise";
+  referredBy?: string;
 }
 
 export interface UpdateUserResponse {
-  msg: string
+  msg: string;
 }
 
 export interface DeleteUserResponse {
-  msg: string
+  msg: string;
 }
 
 export interface UpgradeUserResponse {
-  msg: string
+  msg: string;
 }
 
 export interface RequestPasswordResetRequest {
-  email: string
+  email: string;
 }
 
 export interface RequestPasswordResetResponse {
-  msg: string
+  msg: string;
 }
 
 export interface ResetPasswordRequest {
-  token: string
-  userId: string
-  newPassword: string
-  newPasswordCheck: string
+  token: string;
+  userId: string;
+  newPassword: string;
+  newPasswordCheck: string;
 }
 
 export interface ResetPasswordResponse {
-  msg: string
+  msg: string;
 }
 
 export interface ChangePasswordRequest {
-  oldPassword: string
-  newPassword: string
-  newPasswordCheck: string
+  oldPassword: string;
+  newPassword: string;
+  newPasswordCheck: string;
 }
 
 export interface ChangePasswordResponse {
-  msg: string
+  msg: string;
+}
+
+export interface GetUsersResponse {
+  status: number;
+  status_code: string;
+  data: User[];
+  msg: string;
 }
 
 // ============================================================================
@@ -169,42 +176,42 @@ export interface ChangePasswordResponse {
 // ============================================================================
 
 export interface Contact {
-  _id: string
-  userId: string
-  contactName: string
-  contactNumber: string
-  contactNetwork: 'MTN' | 'GLO' | 'AIRTEL' | '9MOBILE'
-  createdAt: string
-  __v: number
+  _id: string;
+  userId: string;
+  contactName: string;
+  contactNumber: string;
+  contactNetwork: "MTN" | "GLO" | "AIRTEL" | "9MOBILE";
+  createdAt: string;
+  __v: number;
 }
 
 export interface AddContactRequest {
-  contactName: string
-  contactNumber: string
-  contactNetwork: 'MTN' | 'GLO' | 'AIRTEL' | '9MOBILE'
+  contactName: string;
+  contactNumber: string;
+  contactNetwork: "MTN" | "GLO" | "AIRTEL" | "9MOBILE";
 }
 
 export interface AddContactResponse {
-  msg: string
+  msg: string;
 }
 
 export interface UpdateContactRequest {
-  contactName?: string
-  contactNumber?: string
-  contactNetwork?: 'MTN' | 'GLO' | 'AIRTEL' | '9MOBILE'
+  contactName?: string;
+  contactNumber?: string;
+  contactNetwork?: "MTN" | "GLO" | "AIRTEL" | "9MOBILE";
 }
 
 export interface UpdateContactResponse {
-  msg: string
+  msg: string;
 }
 
 export interface DeleteContactResponse {
-  msg: string
+  msg: string;
 }
 
 export interface GetContactsResponse {
-  msg: string
-  contactList: Contact[]
+  msg: string;
+  contactList: Contact[];
 }
 
 // ============================================================================
@@ -212,124 +219,124 @@ export interface GetContactsResponse {
 // ============================================================================
 
 export interface BuyDataRequest {
-  network: string // "1" = MTN, "2" = GLO, "3" = AIRTEL, "4" = 9MOBILE
-  plan: string // Plan ID
-  mobile_number: string
+  network: string; // "1" = MTN, "2" = GLO, "3" = AIRTEL, "4" = 9MOBILE
+  plan: string; // Plan ID
+  mobile_number: string;
 }
 
 export interface BuyDataResponse {
-  status_code: string
-  msg: string
-  data: DataTransaction
+  status_code: string;
+  msg: string;
+  data: DataTransaction;
 }
 
 export interface DataTransaction {
-  trans_Id: string
-  trans_By: string
-  trans_UserName: string
-  trans_Type: 'data'
-  trans_Network: string
-  phone_number: string
-  trans_amount: number
-  trans_profit: number
-  trans_volume_ratio: number
-  balance_Before: number
-  balance_After: number
-  trans_Date: string
-  trans_Status: 'success' | 'failed' | 'pending'
-  apiResponseId?: string
-  apiResponse?: string
-  createdAt: string
-  _id: string
-  __v: number
+  trans_Id: string;
+  trans_By: string;
+  trans_UserName: string;
+  trans_Type: "data";
+  trans_Network: string;
+  phone_number: string;
+  trans_amount: number;
+  trans_profit: number;
+  trans_volume_ratio: number;
+  balance_Before: number;
+  balance_After: number;
+  trans_Date: string;
+  trans_Status: "success" | "failed" | "pending";
+  apiResponseId?: string;
+  apiResponse?: string;
+  createdAt: string;
+  _id: string;
+  __v: number;
 }
 
 export interface BuyAirtimeRequest {
-  mobile_number: string
-  network: number // 1 = MTN, 2 = GLO, 3 = AIRTEL, 4 = 9MOBILE
-  amount: number
+  mobile_number: string;
+  network: number; // 1 = MTN, 2 = GLO, 3 = AIRTEL, 4 = 9MOBILE
+  amount: number;
 }
 
 export interface BuyAirtimeResponse {
-  status: number
-  status_code: string
-  msg: string
-  data: AirtimeTransaction
+  status: number;
+  status_code: string;
+  msg: string;
+  data: AirtimeTransaction;
 }
 
 export interface AirtimeTransaction {
-  trans_Id: string
-  trans_By: string
-  trans_UserName: string
-  trans_Type: 'airtime'
-  trans_Network: string
-  phone_number: string
-  trans_amount: number
-  trans_profit: number
-  trans_volume_ratio: number
-  balance_Before: number
-  balance_After: number
-  trans_Date: string
-  trans_Status: 'success' | 'failed' | 'pending'
-  apiResponseId?: string
-  apiResponse?: string
-  createdAt: string
-  _id: string
-  __v: number
+  trans_Id: string;
+  trans_By: string;
+  trans_UserName: string;
+  trans_Type: "airtime";
+  trans_Network: string;
+  phone_number: string;
+  trans_amount: number;
+  trans_profit: number;
+  trans_volume_ratio: number;
+  balance_Before: number;
+  balance_After: number;
+  trans_Date: string;
+  trans_Status: "success" | "failed" | "pending";
+  apiResponseId?: string;
+  apiResponse?: string;
+  createdAt: string;
+  _id: string;
+  __v: number;
 }
 
 export interface ValidateMeterRequest {
-  meterNumber: string
-  meterId: string
-  meterType: 'PREPAID' | 'POSTPAID'
+  meterNumber: string;
+  meterId: string;
+  meterType: "PREPAID" | "POSTPAID";
 }
 
 export interface ValidateMeterResponse {
-  invalid: boolean
-  name: string
-  address: string
+  invalid: boolean;
+  name: string;
+  address: string;
 }
 
 export interface BuyElectricityRequest {
-  meterId: string
-  meterNumber: string
-  amount: string
-  meterType: 'PREPAID' | 'POSTPAID'
+  meterId: string;
+  meterNumber: string;
+  amount: string;
+  meterType: "PREPAID" | "POSTPAID";
 }
 
 export interface BuyElectricityResponse {
-  status: number
-  status_code: string
-  msg: string
-  data: ElectricityTransaction
+  status: number;
+  status_code: string;
+  msg: string;
+  data: ElectricityTransaction;
 }
 
 export interface ElectricityTransaction {
-  trans_Id: string
-  trans_By: string
-  trans_Type: 'electricity'
-  trans_Network: string
-  phone_number: string
-  trans_amount: number
-  trans_profit: number
-  trans_volume_ratio: number
-  balance_Before: number
-  balance_After: number
-  trans_Date: string
-  trans_Status: 'success' | 'failed' | 'pending'
-  createdAt: string
-  _id: string
-  __v: number
+  trans_Id: string;
+  trans_By: string;
+  trans_Type: "electricity";
+  trans_Network: string;
+  phone_number: string;
+  trans_amount: number;
+  trans_profit: number;
+  trans_volume_ratio: number;
+  balance_Before: number;
+  balance_After: number;
+  trans_Date: string;
+  trans_Status: "success" | "failed" | "pending";
+  createdAt: string;
+  _id: string;
+  __v: number;
 }
 
 export interface Disco {
-  id: string
-  name: string
-  code: string
+  id: string;
+  name: string;
+  code: string;
 }
 
 export interface GetDiscosResponse {
-  discos: Disco[]
+  discos: Disco[];
 }
 
 // ============================================================================
@@ -337,70 +344,70 @@ export interface GetDiscosResponse {
 // ============================================================================
 
 export interface DataPlanPrice {
-  isAvailable: boolean
-  _id: string
-  id: number
-  dataplan_id: string
-  plan_network: string
-  plan_type: string
-  month_validate: string
-  plan: string
-  my_price: string
-  resellerPrice: string
-  apiPrice: string
-  planCostPrice: number
-  __v: number
-  volumeRatio: number
+  isAvailable: boolean;
+  _id: string;
+  id: number;
+  dataplan_id: string;
+  plan_network: string;
+  plan_type: string;
+  month_validate: string;
+  plan: string;
+  my_price: string;
+  resellerPrice: string;
+  apiPrice: string;
+  planCostPrice: number;
+  __v: number;
+  volumeRatio: number;
 }
 
 export interface GetDataPlanPricesResponse {
-  status: number
-  status_code: string
-  data: DataPlanPrice[]
-  msg: string
+  status: number;
+  status_code: string;
+  data: DataPlanPrice[];
+  msg: string;
 }
 
 export interface AddDataPlanRequest {
-  planNetwork: string
-  planName: string
-  planType: string
-  planValidity: string
-  planId: number
-  resellerPrice: number
-  smartEarnerPrice: number
-  apiPrice: number
-  planCostPrice: number
-  partnerPrice: number
-  planVolumeRatio: number
+  planNetwork: string;
+  planName: string;
+  planType: string;
+  planValidity: string;
+  planId: number;
+  resellerPrice: number;
+  smartEarnerPrice: number;
+  apiPrice: number;
+  planCostPrice: number;
+  partnerPrice: number;
+  planVolumeRatio: number;
 }
 
 export interface AddDataPlanResponse {
-  status: number
-  status_code: string
-  msg: string
+  status: number;
+  status_code: string;
+  msg: string;
 }
 
 export interface UpdateDataPlanRequest extends AddDataPlanRequest {
-  _id: string
+  _id: string;
 }
 
 export interface UpdateDataPlanResponse {
-  status: number
-  status_code: string
-  msg: string
+  status: number;
+  status_code: string;
+  msg: string;
 }
 
 export interface DeleteDataPlanResponse {
-  status: number
-  status_code: string
-  msg: string
+  status: number;
+  status_code: string;
+  msg: string;
 }
 
 export interface GetDataPlansResponse {
-  status: number
-  status_code: string
-  data: DataPlanPrice[]
-  msg: string
+  status: number;
+  status_code: string;
+  data: DataPlanPrice[];
+  msg: string;
 }
 
 // ============================================================================
@@ -408,46 +415,46 @@ export interface GetDataPlansResponse {
 // ============================================================================
 
 export interface TransactionSearchParams {
-  type?: string
-  phoneNumber?: string
-  transactionId?: string
-  userName?: string
-  status?: string
+  type?: string;
+  phoneNumber?: string;
+  transactionId?: string;
+  userName?: string;
+  status?: string;
 }
 
 export interface Transaction {
-  _id: string
-  trans_Id: string
-  trans_By: string
-  trans_UserName?: string
-  trans_Type: 'data' | 'airtime' | 'electricity' | 'wallet'
-  trans_Network: string
-  phone_number: string
-  trans_amount: number
-  trans_profit: number
-  trans_volume_ratio: number
-  balance_Before: number
-  balance_After: number
-  trans_Date: string
-  trans_Status: 'success' | 'failed' | 'pending'
-  apiResponseId?: string
-  apiResponse?: string
-  createdAt: string
-  __v: number
+  _id: string;
+  trans_Id: string;
+  trans_By: string;
+  trans_UserName?: string;
+  trans_Type: "data" | "airtime" | "electricity" | "wallet";
+  trans_Network: string;
+  phone_number: string;
+  trans_amount: number;
+  trans_profit: number;
+  trans_volume_ratio: number;
+  balance_Before: number;
+  balance_After: number;
+  trans_Date: string;
+  trans_Status: "success" | "failed" | "pending";
+  apiResponseId?: string;
+  apiResponse?: string;
+  createdAt: string;
+  __v: number;
 }
 
 export interface GetTransactionsResponse {
-  status: number
-  status_code: string
-  data: Transaction[]
-  msg: string
+  status: number;
+  status_code: string;
+  data: Transaction[];
+  msg: string;
 }
 
 export interface SearchTransactionsResponse {
-  status: number
-  status_code: string
-  data: Transaction[]
-  msg: string
+  status: number;
+  status_code: string;
+  data: Transaction[];
+  msg: string;
 }
 
 // ============================================================================
@@ -455,34 +462,34 @@ export interface SearchTransactionsResponse {
 // ============================================================================
 
 export interface TransferFundRequest {
-  userName: string // username or email of recipient
-  amount: number
+  userName: string; // username or email of recipient
+  amount: number;
 }
 
 export interface TransferFundResponse {
-  msg: string
-  amount: number
+  msg: string;
+  amount: number;
   receipt?: {
-    transactionId: string
-    timestamp: string
-    fromUser: string
-    toUser: string
-    amount: number
-    status: 'Success' | 'Failed' | 'Pending'
-  }
+    transactionId: string;
+    timestamp: string;
+    fromUser: string;
+    toUser: string;
+    amount: number;
+    status: "Success" | "Failed" | "Pending";
+  };
 }
 
 export interface FundTransferError {
-  msg: string
-  code?: string
+  msg: string;
+  code?: string;
 }
 
 export interface CreditUserAction {
-  userId: string
-  action: 'credit' | 'debit'
-  amount: number
-  reason: string
-  reference?: string
+  userId: string;
+  action: "credit" | "debit";
+  amount: number;
+  reason: string;
+  reference?: string;
 }
 
 // ============================================================================
@@ -491,37 +498,37 @@ export interface CreditUserAction {
 
 export interface GenerateCouponRequest {
   // Add coupon generation parameters as needed
-  amount?: number
-  quantity?: number
-  expiryDate?: string
+  amount?: number;
+  quantity?: number;
+  expiryDate?: string;
 }
 
 export interface GenerateCouponResponse {
-  status: number
-  status_code: string
-  msg: string
+  status: number;
+  status_code: string;
+  msg: string;
   data?: {
-    coupons: string[]
-    expiryDate: string
-  }
+    coupons: string[];
+    expiryDate: string;
+  };
 }
 
 export interface RefundRequest {
   // Add refund parameters as needed
-  reason?: string
-  amount?: number
+  reason?: string;
+  amount?: number;
 }
 
 export interface RefundResponse {
-  status: number
-  status_code: string
-  msg: string
+  status: number;
+  status_code: string;
+  msg: string;
   data?: {
-    refundId: string
-    transactionId: string
-    amount: number
-    status: string
-  }
+    refundId: string;
+    transactionId: string;
+    amount: number;
+    status: string;
+  };
 }
 
 // ============================================================================
@@ -529,14 +536,14 @@ export interface RefundResponse {
 // ============================================================================
 
 export interface GetPricesRequest {
-  network?: string
+  network?: string;
 }
 
 export interface GetPricesResponse {
-  status: number
-  status_code: string
-  data: any[] // Define specific price structure as needed
-  msg: string
+  status: number;
+  status_code: string;
+  data: any[]; // Define specific price structure as needed
+  msg: string;
 }
 
 // ============================================================================
@@ -544,33 +551,33 @@ export interface GetPricesResponse {
 // ============================================================================
 
 export interface ApiSuccessResponse<T = any> {
-  status: number
-  status_code: string
-  data: T
-  msg: string
+  status: number;
+  status_code: string;
+  data: T;
+  msg: string;
 }
 
 export interface ApiResponse<T = any> {
-  success: boolean
-  data: T
-  msg?: string
+  success: boolean;
+  data: T;
+  msg?: string;
 }
 
 export interface ApiErrorResponse {
-  status: number
-  status_code: string
-  error: string
-  msg: string
+  status: number;
+  status_code: string;
+  error: string;
+  msg: string;
 }
 
 export interface PaginatedResponse<T> {
-  data: T[]
+  data: T[];
   meta: {
-    total: number
-    page: number
-    limit: number
-    totalPages: number
-  }
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
 }
 
 // ============================================================================
@@ -578,37 +585,37 @@ export interface PaginatedResponse<T> {
 // ============================================================================
 
 export const NETWORK_IDS = {
-  MTN: '1',
-  GLO: '2',
-  AIRTEL: '3',
-  '9MOBILE': '4'
-} as const
+  MTN: "1",
+  GLO: "2",
+  AIRTEL: "3",
+  "9MOBILE": "4",
+} as const;
 
-export type NetworkId = typeof NETWORK_IDS[keyof typeof NETWORK_IDS]
+export type NetworkId = (typeof NETWORK_IDS)[keyof typeof NETWORK_IDS];
 
 export const NETWORK_NAMES = {
-  '1': 'MTN',
-  '2': 'GLO',
-  '3': 'AIRTEL',
-  '4': '9MOBILE'
-} as const
+  "1": "MTN",
+  "2": "GLO",
+  "3": "AIRTEL",
+  "4": "9MOBILE",
+} as const;
 
 // ============================================================================
 // UTILITY TYPES
 // ============================================================================
 
-export type HttpMethod = 'GET' | 'POST' | 'PATCH' | 'DELETE' | 'PUT'
+export type HttpMethod = "GET" | "POST" | "PATCH" | "DELETE" | "PUT";
 
 export interface ApiEndpoint {
-  method: HttpMethod
-  url: string
-  description?: string
-  requiresAuth?: boolean
-  authType?: 'x-auth-token' | 'Bearer'
+  method: HttpMethod;
+  url: string;
+  description?: string;
+  requiresAuth?: boolean;
+  authType?: "x-auth-token" | "Bearer";
 }
 
 export interface EndpointConfig {
   [key: string]: {
-    [key: string]: string | ((...args: any[]) => string)
-  }
+    [key: string]: string | ((...args: any[]) => string);
+  };
 }

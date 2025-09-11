@@ -1,18 +1,37 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { usePathname, useRouter } from "next/navigation"
-import { Bell, CreditCard, LayoutDashboard, LogOut, Mail, Menu, Settings, Users, Wallet, X } from "lucide-react"
-import Link from "next/link"
-import { useLogout } from "@/services/hooks"
+import { useLogout } from "@/services/hooks";
+import { useAuthLoading, useUser, useUserActions } from "@/stores/user-store";
+import {
+  Bell,
+  CreditCard,
+  LayoutDashboard,
+  LogOut,
+  Mail,
+  Menu,
+  Settings,
+  Users,
+  Wallet,
+  X,
+} from "lucide-react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { useState } from "react";
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname()
-  const router = useRouter()
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-  const logoutMutation = useLogout()
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const logoutMutation = useLogout();
+  const user = useUser();
+  const userLoading = useAuthLoading();
+  const { logout } = useUserActions();
 
   const navItems = [
     { name: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
@@ -25,42 +44,58 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { name: "Messages", icon: Mail, path: "/messages" },
     { name: "API Settings", icon: Settings, path: "/api-settings" },
     { name: "Site Settings", icon: Settings, path: "/settings" },
-  ]
+  ];
 
   const isActive = (path: string) => {
-    if (path === "/dashboard" && pathname === "/dashboard") return true
-    if (path !== "/dashboard" && pathname.startsWith(path)) return true
-    return false
-  }
+    if (path === "/dashboard" && pathname === "/dashboard") return true;
+    if (path !== "/dashboard" && pathname.startsWith(path)) return true;
+    return false;
+  };
 
   const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen)
-  }
+    setSidebarOpen(!sidebarOpen);
+  };
 
   const handleLogout = async () => {
     try {
-      await logoutMutation.mutateAsync()
-      // Successful logout - redirect to login
-      router.push('/login')
+      // Use Zustand logout action
+      logout();
+      // Redirect to login
+      router.push("/login");
     } catch (error) {
-      console.error('Logout failed:', error)
-      // Force logout even if API call fails - clear local data and redirect
-      router.push('/login')
+      console.error("Logout failed:", error);
+      // Force redirect even if logout fails
+      router.push("/login");
     }
-  }
+  };
+
+  // Get user display info
+  const userName = user?.fullName || user?.userName || "User";
+  const userEmail = user?.email || "";
+  const userType = user?.userType || "";
+  const userBalance = user?.balance || 0;
+  const userInitials =
+    userName
+      .split(" ")
+      .map((n: string) => n[0])
+      .join("")
+      .toUpperCase() || "U";
 
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Mobile Header */}
       <div className="fixed top-0 left-0 right-0 z-20 md:hidden bg-white border-b border-gray-200 px-4 py-3 flex justify-between items-center">
-        <Link href="/dashboard" className="flex items-center gap-2 text-indigo-600 font-semibold">
+        <Link
+          href="/dashboard"
+          className="flex items-center gap-2 text-indigo-600 font-semibold"
+        >
           <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white">
             <span className="text-xs">360</span>
           </div>
           <span>360 Data</span>
         </Link>
-        <button 
-          onClick={toggleSidebar} 
+        <button
+          onClick={toggleSidebar}
           className="p-2 text-gray-500 hover:text-gray-700 transition-colors"
           aria-label="Toggle sidebar"
         >
@@ -70,7 +105,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden" onClick={() => setSidebarOpen(false)} />
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
       )}
 
       {/* Sidebar */}
@@ -80,14 +118,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         }`}
       >
         <div className="flex justify-between items-center p-4 border-b md:hidden">
-          <Link href="/dashboard" className="flex items-center gap-2 text-indigo-600 font-semibold">
+          <Link
+            href="/dashboard"
+            className="flex items-center gap-2 text-indigo-600 font-semibold"
+          >
             <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white">
               <span className="text-xs">360</span>
             </div>
             <span>360 Data</span>
           </Link>
-          <button 
-            onClick={toggleSidebar} 
+          <button
+            onClick={toggleSidebar}
             className="p-2 text-gray-500 hover:text-gray-700 transition-colors"
             aria-label="Close sidebar"
           >
@@ -96,7 +137,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
 
         <div className="p-4 border-b hidden md:block">
-          <Link href="/dashboard" className="flex items-center gap-2 text-indigo-600 font-semibold">
+          <Link
+            href="/dashboard"
+            className="flex items-center gap-2 text-indigo-600 font-semibold"
+          >
             <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white">
               <span className="text-xs">360</span>
             </div>
@@ -111,11 +155,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <Link
                   href={item.path}
                   className={`flex items-center w-full px-4 py-2 text-sm ${
-                    isActive(item.path) ? "text-indigo-600 bg-indigo-50 font-medium" : "text-gray-700 hover:bg-gray-100"
+                    isActive(item.path)
+                      ? "text-indigo-600 bg-indigo-50 font-medium"
+                      : "text-gray-700 hover:bg-gray-100"
                   }`}
                   onClick={() => {
                     if (window.innerWidth < 768) {
-                      setSidebarOpen(false)
+                      setSidebarOpen(false);
                     }
                   }}
                 >
@@ -136,7 +182,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </button>
             </li>
             <li>
-              <button 
+              <button
                 onClick={handleLogout}
                 disabled={logoutMutation.isPending}
                 className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
@@ -146,18 +192,31 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 ) : (
                   <LogOut className="w-5 h-5 mr-3" />
                 )}
-                <span>{logoutMutation.isPending ? 'Logging out...' : 'Logout'}</span>
+                <span>
+                  {logoutMutation.isPending ? "Logging out..." : "Logout"}
+                </span>
               </button>
             </li>
           </ul>
 
           <div className="p-4 border-t flex items-center">
             <div className="w-8 h-8 rounded-full bg-indigo-100 mr-3 flex items-center justify-center">
-              <Users className="w-4 h-4 text-indigo-600" />
+              <span className="text-sm font-medium text-indigo-600">
+                {userInitials}
+              </span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">Abdulsalam Abdulsalam</p>
-              <p className="text-xs text-gray-500 truncate">abdulsalam@gmail.com</p>
+              <p className="text-sm font-medium truncate">
+                {userLoading ? "Loading..." : userName}
+              </p>
+              <p className="text-xs text-gray-500 truncate">
+                {userLoading ? "..." : userEmail}
+              </p>
+              {userType && (
+                <p className="text-xs text-indigo-600 capitalize truncate">
+                  {userLoading ? "..." : userType}
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -174,7 +233,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               aria-label="Search"
             />
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg
+                className="h-5 w-5 text-gray-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -185,7 +249,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
           </div>
           <div className="ml-4">
-            <Link href="/notifications-management" className="p-2 text-gray-500 hover:text-indigo-600 transition-colors">
+            <Link
+              href="/notifications-management"
+              className="p-2 text-gray-500 hover:text-indigo-600 transition-colors"
+            >
               <Bell className="w-5 h-5" />
             </Link>
           </div>
@@ -193,5 +260,5 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {children}
       </main>
     </div>
-  )
+  );
 }

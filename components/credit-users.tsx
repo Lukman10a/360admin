@@ -1,61 +1,86 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { Check } from "lucide-react"
+import { useAdminTransferFund } from "@/services/hooks";
+import { Check } from "lucide-react";
+import { useState } from "react";
 
-type FormState = "form" | "processing" | "success"
+type FormState = "form" | "processing" | "success";
 
 export default function CreditUsers() {
-  const [formState, setFormState] = useState<FormState>("form")
-  const [email, setEmail] = useState("")
-  const [action, setAction] = useState("")
-  const [amount, setAmount] = useState("")
-  const [reason, setReason] = useState("")
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const [formState, setFormState] = useState<FormState>("form");
+  const [email, setEmail] = useState("");
+  const [action, setAction] = useState("");
+  const [amount, setAmount] = useState("");
+  const [reason, setReason] = useState("");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [transactionDetails, setTransactionDetails] = useState({
     amount: "",
     oldBalance: "",
     newBalance: "",
-  })
+  });
+
+  // API hook
+  const transferMutation = useAdminTransferFund();
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    setFormState("processing")
+    e.preventDefault();
+    setFormState("processing");
 
-    // Simulate API call
-    setTimeout(() => {
-      setTransactionDetails({
-        amount: `N${amount}`,
-        oldBalance: "N0",
-        newBalance: `N${amount}`,
-      })
-      setFormState("success")
-    }, 2000)
-  }
+    const transferData = {
+      request: {
+        userName: email,
+        amount: parseFloat(amount),
+      },
+      adminToken: "your-admin-token-here", // This should come from auth context
+    };
+
+    transferMutation.mutate(transferData, {
+      onSuccess: (data) => {
+        setTransactionDetails({
+          amount: `N${amount}`,
+          oldBalance: "N0", // This should come from the API response
+          newBalance: `N${amount}`, // This should be calculated from API response
+        });
+        setFormState("success");
+      },
+      onError: (error) => {
+        console.error("Transfer failed:", error);
+        setFormState("form");
+        alert("Transfer failed. Please try again.");
+      },
+    });
+  };
 
   const resetForm = () => {
-    setEmail("")
-    setAction("")
-    setAmount("")
-    setReason("")
-    setFormState("form")
-  }
+    setEmail("");
+    setAction("");
+    setAmount("");
+    setReason("");
+    setFormState("form");
+  };
 
   return (
     <div className="p-4 md:p-6 max-w-3xl mx-auto">
       {/* Page title */}
-      <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-6">Credit User</h1>
+      <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-6">
+        Credit User
+      </h1>
 
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
         {formState === "form" && (
           <div className="p-6">
-            <h2 className="text-lg font-medium mb-6">Credit/Debit User Wallet</h2>
+            <h2 className="text-lg font-medium mb-6">
+              Credit/Debit User Wallet
+            </h2>
             <form onSubmit={handleSubmit}>
               <div className="space-y-6">
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     User Email
                   </label>
                   <input
@@ -70,7 +95,10 @@ export default function CreditUsers() {
                 </div>
 
                 <div className="relative">
-                  <label htmlFor="action" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="action"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Action
                   </label>
                   <button
@@ -80,7 +108,9 @@ export default function CreditUsers() {
                   >
                     {action || "Select action"}
                     <svg
-                      className={`w-5 h-5 transition-transform ${isDropdownOpen ? "transform rotate-180" : ""}`}
+                      className={`w-5 h-5 transition-transform ${
+                        isDropdownOpen ? "transform rotate-180" : ""
+                      }`}
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 20 20"
                       fill="currentColor"
@@ -96,27 +126,33 @@ export default function CreditUsers() {
                   {isDropdownOpen && (
                     <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg">
                       <div className="py-1">
-                        <div className="px-3 py-2 text-sm text-gray-700">Select Document Type</div>
+                        <div className="px-3 py-2 text-sm text-gray-700">
+                          Select Document Type
+                        </div>
                         <button
                           type="button"
                           className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 flex items-center"
                           onClick={() => {
-                            setAction("Credit")
-                            setIsDropdownOpen(false)
+                            setAction("Credit");
+                            setIsDropdownOpen(false);
                           }}
                         >
-                          {action === "Credit" && <Check className="w-4 h-4 mr-2" />}
+                          {action === "Credit" && (
+                            <Check className="w-4 h-4 mr-2" />
+                          )}
                           <span>Credit</span>
                         </button>
                         <button
                           type="button"
                           className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 flex items-center"
                           onClick={() => {
-                            setAction("Debit")
-                            setIsDropdownOpen(false)
+                            setAction("Debit");
+                            setIsDropdownOpen(false);
                           }}
                         >
-                          {action === "Debit" && <Check className="w-4 h-4 mr-2" />}
+                          {action === "Debit" && (
+                            <Check className="w-4 h-4 mr-2" />
+                          )}
                           <span>Debit</span>
                         </button>
                       </div>
@@ -125,7 +161,10 @@ export default function CreditUsers() {
                 </div>
 
                 <div>
-                  <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="amount"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Amount
                   </label>
                   <input
@@ -140,7 +179,10 @@ export default function CreditUsers() {
                 </div>
 
                 <div>
-                  <label htmlFor="reason" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="reason"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Reason for action
                   </label>
                   <input
@@ -177,7 +219,14 @@ export default function CreditUsers() {
                 fill="none"
                 viewBox="0 0 24 24"
               >
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
                 <path
                   className="opacity-75"
                   fill="currentColor"
@@ -202,7 +251,10 @@ export default function CreditUsers() {
               <p>Old balance is {transactionDetails.oldBalance}.</p>
               <p>New Balance is {transactionDetails.newBalance}.</p>
             </div>
-            <button onClick={resetForm} className="text-indigo-600 hover:text-indigo-800 font-medium">
+            <button
+              onClick={resetForm}
+              className="text-indigo-600 hover:text-indigo-800 font-medium"
+            >
               Back to form
             </button>
             <div className="absolute bottom-4 text-center text-sm text-gray-500 w-full left-0">
@@ -212,5 +264,5 @@ export default function CreditUsers() {
         )}
       </div>
     </div>
-  )
+  );
 }
