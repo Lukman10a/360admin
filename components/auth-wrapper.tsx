@@ -1,9 +1,8 @@
 "use client";
 
-import { getAuthToken } from "@/services/api/infrastructure/client";
 import { useHydrated, useUserStore } from "@/stores/user-store";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 interface AuthWrapperProps {
   children: React.ReactNode;
@@ -12,46 +11,46 @@ interface AuthWrapperProps {
 export default function AuthWrapper({ children }: AuthWrapperProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const { user, isAuthenticated, setAuthenticated, clearUser } = useUserStore();
+  const { isAuthenticated } = useUserStore();
   const hydrated = useHydrated();
+  const redirectingRef = useRef(false);
+  const lastPathnameRef = useRef<string | null>(null);
 
+  // Simple redirect logic - only run after hydration and when pathname changes
   useEffect(() => {
-    if (!hydrated) return;
+    if (!hydrated || redirectingRef.current) return;
 
-    const token = getAuthToken();
-
-    if (token) {
-      if (!isAuthenticated) {
-        setAuthenticated(true);
-      }
-    } else {
-      if (isAuthenticated) {
-        clearUser();
-      }
+    // Only process if this is the first render or pathname actually changed
+    const isFirstRender = lastPathnameRef.current === null;
+    const pathnameChanged = lastPathnameRef.current !== pathname;
+    
+    if (!isFirstRender && !pathnameChanged) {
+      return;
     }
+    lastPathnameRef.current = pathname;
 
-    // Handle redirects
-    if (isAuthenticated && pathname === "/login") {
+    const shouldRedirectToDashboard = isAuthenticated && pathname === "/login";
+    const shouldRedirectToLogin = !isAuthenticated && pathname !== "/login";
+
+    if (shouldRedirectToDashboard) {
+      console.log("AuthWrapper: Redirecting authenticated user from login to dashboard");
+      redirectingRef.current = true;
       router.push("/dashboard");
-    } else if (!isAuthenticated && pathname !== "/login") {
+      setTimeout(() => {
+        redirectingRef.current = false;
+      }, 1000);
+    } else if (shouldRedirectToLogin) {
+      console.log("AuthWrapper: Redirecting unauthenticated user to login");
+      redirectingRef.current = true;
       router.push("/login");
+      setTimeout(() => {
+        redirectingRef.current = false;
+      }, 1000);
     }
-  }, [
-    pathname,
-    router,
-    hydrated,
-    isAuthenticated,
-    setAuthenticated,
-    clearUser,
-  ]);
+  }, [pathname, isAuthenticated, hydrated, router]);
 
   // If on login page, show without auth check
   if (pathname === "/login") {
-    return <>{children}</>;
-  }
-
-  // If authenticated, show the protected content
-  if (isAuthenticated) {
     return <>{children}</>;
   }
 
@@ -63,6 +62,11 @@ export default function AuthWrapper({ children }: AuthWrapperProps) {
         <span className="ml-2">Checking authentication...</span>
       </div>
     );
+  }
+
+  // If authenticated, show the protected content
+  if (isAuthenticated) {
+    return <>{children}</>;
   }
 
   // If not authenticated and not on login page, show redirect message

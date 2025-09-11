@@ -8,7 +8,7 @@ import { useLogin } from "@/services/hooks/useAuth";
 import { useIsAuthenticated } from "@/stores/user-store";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export default function LoginPage() {
   const [userName, setUserName] = useState("");
@@ -19,13 +19,6 @@ export default function LoginPage() {
   const router = useRouter();
   const loginMutation = useLogin();
   const isAuthenticated = useIsAuthenticated();
-
-  // Redirect to dashboard if already authenticated
-  useEffect(() => {
-    if (isAuthenticated) {
-      router.push("/dashboard");
-    }
-  }, [isAuthenticated, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,11 +35,8 @@ export default function LoginPage() {
         password,
       });
 
-      // Login successful - the hook will update Zustand store
-      console.log("Login successful, redirecting...");
-
-      // Redirect after successful login
-      router.push("/dashboard");
+      // Login successful - the hook will update Zustand store and AuthWrapper will handle redirect
+      console.log("Login successful, AuthWrapper will handle redirect");
     } catch (error: any) {
       console.error("Login failed:", error);
       setError(

@@ -1,3 +1,4 @@
+import { getAuthToken } from "@/services/api/infrastructure/client";
 import { User } from "@/services/types/api-endpoints";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
@@ -92,7 +93,24 @@ export const useUserStore = create<UserStore>()(
       }),
       onRehydrateStorage: () => (state) => {
         if (state) {
+          // Set hydrated first
           state.hydrated = true;
+
+          // Check if we have a token and sync authentication state
+          const token = getAuthToken();
+          console.log("Rehydrating store - token exists:", !!token);
+          console.log("Rehydrating store - isAuthenticated:", state.isAuthenticated);
+          
+          if (token && !state.isAuthenticated) {
+            // If we have a token but not authenticated, set to authenticated
+            console.log("Setting authenticated to true due to token presence");
+            state.isAuthenticated = true;
+          } else if (!token && state.isAuthenticated) {
+            // If no token but authenticated, clear the user data
+            console.log("Clearing user data due to missing token");
+            state.user = null;
+            state.isAuthenticated = false;
+          }
         }
       },
     }
