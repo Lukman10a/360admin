@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function DashboardLayout({
   children,
@@ -32,6 +32,25 @@ export default function DashboardLayout({
   const user = useUser();
   const userLoading = useAuthLoading();
   const { logout } = useUserActions();
+  const [persistedUser, setPersistedUser] = useState<any | null>(null);
+
+  // Read persisted user from localStorage in case Zustand hasn't hydrated yet
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const raw = localStorage.getItem("user-store");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        // Persisted Zustand format wraps state under "state"
+        const pUser = parsed?.state?.user || null;
+        if (pUser) setPersistedUser(pUser);
+      }
+    } catch (e) {
+      console.warn("Failed to parse persisted user-store:", e);
+    }
+  }, []);
+
+  const displayedUser = user || persistedUser;
 
   const navItems = [
     { name: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
@@ -70,10 +89,10 @@ export default function DashboardLayout({
   };
 
   // Get user display info
-  const userName = user?.fullName || user?.userName || "User";
-  const userEmail = user?.email || "";
-  const userType = user?.userType || "";
-  const userBalance = user?.balance || 0;
+  const userName = displayedUser?.fullName || displayedUser?.userName || "User";
+  const userEmail = displayedUser?.email || "";
+  const userType = displayedUser?.userType || "";
+  const userBalance = displayedUser?.balance || 0;
   const userInitials =
     userName
       .split(" ")

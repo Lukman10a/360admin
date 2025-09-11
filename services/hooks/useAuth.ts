@@ -61,25 +61,66 @@ export const useLogin = (
       setError(null);
     },
     onSuccess: (data) => {
-      console.log("Login successful, response data:", data);
+      console.log("=== LOGIN SUCCESS ===");
+      console.log("Full response:", data);
+      console.log("Response type:", typeof data);
+      console.log("Response keys:", Object.keys(data || {}));
+
+      // Validate response structure
+      if (!data) {
+        console.error("Login response is null/undefined");
+        setError("Invalid login response");
+        setLoading(false);
+        return;
+      }
 
       // Set auth token
-      setAuthToken(data.token);
-      console.log("Auth token set:", data.token);
+      const token = data.token;
+      if (token) {
+        setAuthToken(token);
+        console.log("✓ Auth token set:", token.substring(0, 20) + "...");
+      } else {
+        console.error("No token in response");
+        setError("No token received");
+        setLoading(false);
+        return;
+      }
 
-      // Save user data to Zustand store
-      console.log("Setting user data:", data.data);
-      setUser(data.data);
-      setAuthenticated(true);
+      // Extract user data
+      const userData = data.data;
+      console.log("User data from response:", userData);
+      console.log("User data type:", typeof userData);
+
+      if (userData && typeof userData === "object") {
+        console.log("User data keys:", Object.keys(userData));
+        console.log("✓ Setting user data in store");
+        setUser(userData);
+        setAuthenticated(true);
+        console.log("✓ User saved to store");
+      } else {
+        console.error("Invalid user data:", userData);
+        // Try to find user data in other locations
+        if ((data as any).user) {
+          console.log("Found user data at response.user, using that");
+          setUser((data as any).user);
+          setAuthenticated(true);
+        } else {
+          console.error("No valid user data found in response");
+          setError("Invalid user data received");
+          setLoading(false);
+          return;
+        }
+      }
+
       setLoading(false);
-
-      console.log("User data saved to store");
 
       // Invalidate user profile to refetch with new token
       queryClient.invalidateQueries({ queryKey: ["user", "profile"] });
 
       // Clear any error states
       queryClient.setQueryData(["auth", "error"], null);
+
+      console.log("=== LOGIN COMPLETE ===");
     },
     onError: (error: any) => {
       console.error("Login error:", error);

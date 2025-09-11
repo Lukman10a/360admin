@@ -7,6 +7,7 @@ interface UserState {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
+  hydrated: boolean;
 }
 
 interface UserActions {
@@ -29,6 +30,7 @@ export const useUserStore = create<UserStore>()(
       isAuthenticated: false,
       isLoading: false,
       error: null,
+      hydrated: false,
 
       // Actions
       setUser: (user) => {
@@ -43,7 +45,9 @@ export const useUserStore = create<UserStore>()(
 
       setAuthenticated: (authenticated) => {
         console.log("Zustand setAuthenticated called with:", authenticated);
-        set({ isAuthenticated: authenticated });
+        if (authenticated !== get().isAuthenticated) {
+          set({ isAuthenticated: authenticated });
+        }
       },
 
       setLoading: (loading) => set({ isLoading: loading }),
@@ -86,6 +90,11 @@ export const useUserStore = create<UserStore>()(
         user: state.user,
         isAuthenticated: state.isAuthenticated,
       }),
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          state.hydrated = true;
+        }
+      },
     }
   )
 );
@@ -96,6 +105,7 @@ export const useIsAuthenticated = () =>
   useUserStore((state) => state.isAuthenticated);
 export const useAuthLoading = () => useUserStore((state) => state.isLoading);
 export const useAuthError = () => useUserStore((state) => state.error);
+export const useHydrated = () => useUserStore((state) => state.hydrated);
 
 // Helper hooks
 export const useUserBalance = () =>
