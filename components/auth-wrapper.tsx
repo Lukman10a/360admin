@@ -11,56 +11,65 @@ interface AuthWrapperProps {
 
 export default function AuthWrapper({ children }: AuthWrapperProps) {
   const [isLoading, setIsLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
-  const { setUser, setAuthenticated, clearUser } = useUserStore();
+  const { user, isAuthenticated, setAuthenticated, clearUser } = useUserStore();
 
   useEffect(() => {
-    const checkAuth = async () => {
+    const checkAuth = () => {
       const token = getAuthToken();
       const hasToken = !!token;
+      const hasUserData = !!user;
 
-      if (hasToken) {
-        try {
-          // If we have a token but no user in store, we need to fetch user data
-          // For now, we'll assume the user data is persisted in localStorage via Zustand
-          // In a real app, you might want to validate the token and fetch fresh user data
+      console.log("Auth check:", {
+        hasToken,
+        hasUserData,
+        pathname,
+        isAuthenticated,
+        userExists: !!user,
+      });
+
+      if (hasToken && hasUserData) {
+        // User is authenticated with both token and user data
+        if (!isAuthenticated) {
+          console.log("Setting authenticated to true");
           setAuthenticated(true);
-          setIsAuthenticated(true);
-        } catch (error) {
-          console.error("Failed to load user data:", error);
-          // If token is invalid, clear everything
-          clearUser();
-          setAuthenticated(false);
-          setIsAuthenticated(false);
+        }
+        setIsLoading(false);
+
+        // If on login page, redirect to dashboard
+        if (pathname === "/login") {
+          console.log("User authenticated, redirecting to dashboard");
+          router.push("/dashboard");
+        }
+      } else if (hasToken && !hasUserData) {
+        // Has token but no user data - this shouldn't happen with proper setup
+        console.log("Token found but no user data, clearing auth");
+        clearUser();
+        setIsLoading(false);
+
+        if (pathname !== "/login") {
+          router.push("/login");
         }
       } else {
         // No token, clear user data
+        console.log("No token found, clearing user data");
         clearUser();
-        setAuthenticated(false);
-        setIsAuthenticated(false);
-      }
+        setIsLoading(false);
 
-      setIsLoading(false);
-
-      // If not authenticated and not on login page, redirect to login
-      if (!hasToken && pathname !== "/login") {
-        console.log("No token found, redirecting to login");
-        router.push("/login");
-        return;
-      }
-
-      // If authenticated and on login page, redirect to dashboard
-      if (hasToken && pathname === "/login") {
-        console.log("Token found, redirecting to dashboard");
-        router.push("/dashboard");
-        return;
+        // If not on login page, redirect to login
+        if (pathname !== "/login") {
+          console.log("No token found, redirecting to login");
+          router.push("/login");
+        }
       }
     };
 
-    checkAuth();
-  }, [pathname, router, setUser, setAuthenticated, clearUser]);
+    // Add a small delay to ensure Zustand has loaded from localStorage
+    const timeoutId = setTimeout(checkAuth, 100);
+
+    return () => clearTimeout(timeoutId);
+  }, [pathname, router, user, isAuthenticated, setAuthenticated, clearUser]);
 
   // Show loading spinner while checking auth
   if (isLoading) {
@@ -78,11 +87,11 @@ export default function AuthWrapper({ children }: AuthWrapperProps) {
   }
 
   // If authenticated, show the protected content
-  if (isAuthenticated) {
+  if (isAuthenticated && user) {
     return <>{children}</>;
   }
 
-  // If not authenticated and not on login page, show loading (will redirect)
+  // If not authenticated and not on login page, show redirect message
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>

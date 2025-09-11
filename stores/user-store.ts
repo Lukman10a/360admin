@@ -31,15 +31,20 @@ export const useUserStore = create<UserStore>()(
       error: null,
 
       // Actions
-      setUser: (user) =>
+      setUser: (user) => {
+        console.log("Zustand setUser called with:", user);
         set({
           user,
           isAuthenticated: !!user,
           error: null,
-        }),
+        });
+        console.log("Zustand store updated, isAuthenticated:", !!user);
+      },
 
-      setAuthenticated: (authenticated) =>
-        set({ isAuthenticated: authenticated }),
+      setAuthenticated: (authenticated) => {
+        console.log("Zustand setAuthenticated called with:", authenticated);
+        set({ isAuthenticated: authenticated });
+      },
 
       setLoading: (loading) => set({ isLoading: loading }),
 

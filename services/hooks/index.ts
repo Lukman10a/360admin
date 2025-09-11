@@ -7,7 +7,6 @@
 // AUTHENTICATION & USER MANAGEMENT
 // ============================================================================
 export * from "./useAuth"; // All auth hooks including useUserProfile, useLogin, useLogout
-export * from "./useUsers"; // User CRUD operations, management
 
 // ============================================================================
 // API DATA HOOKS (TanStack Query)
@@ -37,6 +36,7 @@ export {
   useDiscos,
   // Admin hooks
   useGenerateCoupon,
+  // NOTE: useLogin is excluded here to avoid conflict with useAuth
   useNetworkId,
   // Utility hooks
   useNetworkName,
@@ -46,6 +46,7 @@ export {
   // Price hooks
   usePrices,
   useProcessRefund,
+  useRegister,
   useRequestPasswordReset,
   useResetPassword,
   useSearchTransactions,
@@ -84,7 +85,6 @@ export {
 // Authentication & User Management
 export const authHooks = {
   useAuth: () => import("./useAuth").then((m) => m),
-  useUsers: () => import("./useUsers").then((m) => m),
 };
 
 // Data Fetching & Management

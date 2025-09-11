@@ -56,10 +56,10 @@ import {
   UpdateUserRequest,
   UpdateUserResponse,
   UpgradeUserResponse,
+  User,
   ValidateMeterRequest,
   ValidateMeterResponse,
-} from "../types";
-import { User } from "../types/api-endpoints";
+} from "../types/";
 import apiClient from "./infrastructure/client";
 import { ENDPOINTS } from "./infrastructure/endpoint";
 
@@ -97,8 +97,8 @@ export class ApiService {
   /**
    * Get user profile
    */
-  static async getUserProfile(): Promise<ApiSuccessResponse<User[]>> {
-    const response = await apiClient.get<ApiSuccessResponse<User[]>>(
+  static async getUserProfile(): Promise<ApiSuccessResponse<User>> {
+    const response = await apiClient.get<ApiSuccessResponse<User>>(
       ENDPOINTS.USER.PROFILE
     );
     return response.data;

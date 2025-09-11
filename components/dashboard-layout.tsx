@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { useLogout } from "@/services/hooks";
+import { useLogout } from "@/services/hooks/useAuth";
 import { useAuthLoading, useUser, useUserActions } from "@/stores/user-store";
 import {
   Bell,

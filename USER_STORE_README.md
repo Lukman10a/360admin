@@ -2,18 +2,38 @@
 
 This project now uses Zustand for global state management of user authentication and data.
 
-## Features
+## ✅ What's Fixed
 
-- **Persistent User State**: User data is automatically saved to localStorage and restored on app reload
+### 1. **Authentication Flow Issues**
+
+- Fixed the "Checking authentication..." infinite loop
+- Auth wrapper now properly checks Zustand store for user data
+- Authentication state is correctly initialized from persisted data
+
+### 2. **Consolidated API Hooks**
+
+- All API hooks are now centralized in `useApiQueries.ts`
+- Consistent TypeScript types from `api-endpoints.ts`
+- Proper integration with Zustand store for user management
+
+### 3. **Type Safety**
+
+- All components use types from `api-endpoints.ts`
+- Consistent User type across the application
+- Proper type checking for all API responses
+
+## 🎯 Key Features
+
+- **Persistent Sessions**: User data is automatically saved to localStorage and restored on app reload
 - **Type-Safe**: Full TypeScript support with proper type definitions
 - **Easy to Use**: Simple hooks for accessing user data throughout the app
 - **Automatic Sync**: Login/logout automatically updates the global state
 
-## Usage
+## 📖 Usage Examples
 
 ### Basic User Data Access
 
-```tsx
+```typescript
 import {
   useUser,
   useUserName,
@@ -39,7 +59,7 @@ function MyComponent() {
 
 ### Authentication State
 
-```tsx
+```typescript
 import {
   useIsAuthenticated,
   useAuthLoading,
@@ -59,46 +79,28 @@ function AuthComponent() {
 }
 ```
 
-### User Actions
+### API Hooks Usage
 
-```tsx
-import { useUserActions } from "@/stores/user-store";
+```typescript
+import {
+  useTransactions,
+  useDataPlans,
+  useBuyData,
+  useLogin,
+} from "@/services/hooks/useApiQueries";
 
-function ProfileComponent() {
-  const { updateUser, logout } = useUserActions();
+function Dashboard() {
+  const { data: transactions } = useTransactions();
+  const { data: dataPlans } = useDataPlans();
+  const buyDataMutation = useBuyData();
 
-  const handleUpdateProfile = () => {
-    updateUser({ fullName: "New Name" });
-  };
-
-  const handleLogout = () => {
-    logout();
-  };
-
-  return (
-    <div>
-      <button onClick={handleUpdateProfile}>Update Profile</button>
-      <button onClick={handleLogout}>Logout</button>
-    </div>
-  );
+  // Use the hooks as needed
 }
 ```
 
-### Using the UserInfo Component
+## 🔧 Architecture
 
-```tsx
-import UserInfo from "@/components/user-info";
-
-function Header() {
-  return (
-    <header>
-      <UserInfo />
-    </header>
-  );
-}
-```
-
-## Store Structure
+### Store Structure
 
 The user store contains:
 
@@ -107,18 +109,39 @@ The user store contains:
 - `isLoading`: Boolean for loading states
 - `error`: Error message string (or null)
 
-## Automatic Persistence
+### Hook Organization
 
-User data is automatically:
+- **Authentication**: `useAuth.ts` - Login, logout, user profile
+- **API Queries**: `useApiQueries.ts` - All data fetching hooks
+- **User Store**: `user-store.ts` - Global user state management
 
-- Saved to localStorage when user logs in
-- Restored from localStorage when app starts
-- Cleared from localStorage when user logs out
+## 🚀 Getting Started
 
-## Integration with Auth Hooks
+1. **Login Flow**: User logs in → Token saved → User data stored in Zustand
+2. **App Load**: Check token → Load user data from store → Authenticate user
+3. **Navigation**: Protected routes check authentication state
+4. **Logout**: Clear token and user data → Redirect to login
 
-The existing auth hooks (`useLogin`, `useLogout`, etc.) automatically update the Zustand store, so you don't need to manually manage state in most cases.
+## 📁 File Structure
 
-## Type Safety
+```
+services/
+├── hooks/
+│   ├── useAuth.ts          # Authentication hooks
+│   ├── useApiQueries.ts    # All API data hooks
+│   └── index.ts           # Centralized exports
+├── types/
+│   ├── api-endpoints.ts   # API type definitions
+│   └── index.ts          # Type exports
+└── stores/
+    └── user-store.ts      # Zustand user store
+```
 
-All user data is fully typed using the `User` interface from `@/services/types/api-endpoints`. The store provides type-safe access to all user properties.
+## 🔄 Migration Notes
+
+- All components now use `useApiQueries` for data fetching
+- User data comes from Zustand store, not API hooks
+- Authentication state is managed globally
+- Types are consistent across the application
+
+This setup provides a robust, type-safe, and maintainable architecture for user management and API interactions.

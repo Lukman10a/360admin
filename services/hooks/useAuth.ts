@@ -6,7 +6,7 @@ import {
   useQueryClient,
   UseQueryOptions,
 } from "@tanstack/react-query";
-import { getAuthToken, setAuthToken } from "../api";
+import { getAuthToken, setAuthToken, User } from "../api";
 import { ApiService } from "../api/api-service";
 import {
   ApiSuccessResponse,
@@ -24,7 +24,7 @@ import {
   UpdateUserRequest,
   UpdateUserResponse,
   UpgradeUserResponse,
-} from "../types";
+} from "../types/api-endpoints";
 
 // ============================================================================
 // AUTHENTICATION HOOKS
@@ -32,8 +32,10 @@ import {
 
 // User Profile Query
 export const useUserProfile = (
-  options?: UseQueryOptions<ApiSuccessResponse<any>>
+  options?: UseQueryOptions<ApiSuccessResponse<User>, Error>
 ) => {
+  const { setUser } = useUserStore();
+
   return useQuery({
     queryKey: ["user", "profile"],
     queryFn: () => ApiService.getUserProfile(),
@@ -54,17 +56,24 @@ export const useLogin = (
   return useMutation({
     mutationFn: (request: LoginRequest) => ApiService.login(request),
     onMutate: () => {
+      console.log("Login mutation started");
       setLoading(true);
       setError(null);
     },
     onSuccess: (data) => {
+      console.log("Login successful, response data:", data);
+
       // Set auth token
       setAuthToken(data.token);
+      console.log("Auth token set:", data.token);
 
       // Save user data to Zustand store
+      console.log("Setting user data:", data.data);
       setUser(data.data);
       setAuthenticated(true);
       setLoading(false);
+
+      console.log("User data saved to store");
 
       // Invalidate user profile to refetch with new token
       queryClient.invalidateQueries({ queryKey: ["user", "profile"] });
@@ -73,6 +82,7 @@ export const useLogin = (
       queryClient.setQueryData(["auth", "error"], null);
     },
     onError: (error: any) => {
+      console.error("Login error:", error);
       // Set error state
       setError(error.message || "Login failed");
       setLoading(false);

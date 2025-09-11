@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransactions } from "@/services/hooks";
+import { useTransactions } from "@/services/hooks/useApiQueries";
 import { Transaction } from "@/services/types/api-endpoints";
 import { useAuthLoading, useUser } from "@/stores/user-store";
 import {
