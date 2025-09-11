@@ -99,8 +99,11 @@ export const useUserStore = create<UserStore>()(
           // Check if we have a token and sync authentication state
           const token = getAuthToken();
           console.log("Rehydrating store - token exists:", !!token);
-          console.log("Rehydrating store - isAuthenticated:", state.isAuthenticated);
-          
+          console.log(
+            "Rehydrating store - isAuthenticated:",
+            state.isAuthenticated
+          );
+
           if (token && !state.isAuthenticated) {
             // If we have a token but not authenticated, set to authenticated
             console.log("Setting authenticated to true due to token presence");

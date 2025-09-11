@@ -23,7 +23,7 @@ export default function AuthWrapper({ children }: AuthWrapperProps) {
     // Only process if this is the first render or pathname actually changed
     const isFirstRender = lastPathnameRef.current === null;
     const pathnameChanged = lastPathnameRef.current !== pathname;
-    
+
     if (!isFirstRender && !pathnameChanged) {
       return;
     }
@@ -33,7 +33,9 @@ export default function AuthWrapper({ children }: AuthWrapperProps) {
     const shouldRedirectToLogin = !isAuthenticated && pathname !== "/login";
 
     if (shouldRedirectToDashboard) {
-      console.log("AuthWrapper: Redirecting authenticated user from login to dashboard");
+      console.log(
+        "AuthWrapper: Redirecting authenticated user from login to dashboard"
+      );
       redirectingRef.current = true;
       router.push("/dashboard");
       setTimeout(() => {
