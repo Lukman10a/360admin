@@ -3,7 +3,11 @@
 import type React from "react";
 
 import { useLogout } from "@/services/hooks/useAuth";
-import { useAuthLoading, useUser, useUserActions } from "@/stores/user-store";
+import {
+  useAuthLoading,
+  useLogout as useStoreLogout,
+  useUser,
+} from "@/stores/user-store";
 import {
   Bell,
   CreditCard,
@@ -31,7 +35,7 @@ export default function DashboardLayout({
   const logoutMutation = useLogout();
   const user = useUser();
   const userLoading = useAuthLoading();
-  const { logout } = useUserActions();
+  const logout = useStoreLogout();
   const [persistedUser, setPersistedUser] = useState<any | null>(null);
 
   // Read persisted user from localStorage in case Zustand hasn't hydrated yet

@@ -1,4 +1,3 @@
-import { getAuthToken } from "@/services/api/infrastructure/client";
 import { User } from "@/services/types/api-endpoints";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
@@ -93,27 +92,8 @@ export const useUserStore = create<UserStore>()(
       }),
       onRehydrateStorage: () => (state) => {
         if (state) {
-          // Set hydrated first
+          // Just set hydrated to true, don't modify other state here
           state.hydrated = true;
-
-          // Check if we have a token and sync authentication state
-          const token = getAuthToken();
-          console.log("Rehydrating store - token exists:", !!token);
-          console.log(
-            "Rehydrating store - isAuthenticated:",
-            state.isAuthenticated
-          );
-
-          if (token && !state.isAuthenticated) {
-            // If we have a token but not authenticated, set to authenticated
-            console.log("Setting authenticated to true due to token presence");
-            state.isAuthenticated = true;
-          } else if (!token && state.isAuthenticated) {
-            // If no token but authenticated, clear the user data
-            console.log("Clearing user data due to missing token");
-            state.user = null;
-            state.isAuthenticated = false;
-          }
         }
       },
     }
@@ -141,13 +121,11 @@ export const useUserFullName = () =>
   useUserStore((state) => state.user?.fullName || "");
 
 // Actions
-export const useUserActions = () =>
-  useUserStore((state) => ({
-    setUser: state.setUser,
-    setAuthenticated: state.setAuthenticated,
-    setLoading: state.setLoading,
-    setError: state.setError,
-    clearUser: state.clearUser,
-    updateUser: state.updateUser,
-    logout: state.logout,
-  }));
+export const useSetUser = () => useUserStore((state) => state.setUser);
+export const useSetAuthenticated = () =>
+  useUserStore((state) => state.setAuthenticated);
+export const useSetLoading = () => useUserStore((state) => state.setLoading);
+export const useSetError = () => useUserStore((state) => state.setError);
+export const useClearUser = () => useUserStore((state) => state.clearUser);
+export const useUpdateUser = () => useUserStore((state) => state.updateUser);
+export const useLogout = () => useUserStore((state) => state.logout);

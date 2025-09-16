@@ -1,3 +1,4 @@
+import { useHydrated, useIsAuthenticated } from "@/stores/user-store";
 import {
   useMutation,
   UseMutationOptions,
@@ -122,26 +123,28 @@ export const queryKeys = {
 export const useUserProfile = (
   options?: UseQueryOptions<ApiSuccessResponse<any>>
 ) => {
+  const isAuthenticated = useIsAuthenticated();
+  const hydrated = useHydrated();
   return useQuery({
     queryKey: queryKeys.user.profile,
     queryFn: () => ApiService.getUserProfile(),
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
-    enabled:
-      typeof window !== "undefined" && !!localStorage.getItem("auth_token"),
+    enabled: typeof window !== "undefined" && isAuthenticated && hydrated,
     ...options,
   });
 };
 
 // Get All Users Query (Admin only)
 export const useUsers = (options?: UseQueryOptions<GetUsersResponse>) => {
+  const isAuthenticated = useIsAuthenticated();
+  const hydrated = useHydrated();
   return useQuery({
     queryKey: queryKeys.user.all,
     queryFn: () => ApiService.getAllUsers(),
     staleTime: 2 * 60 * 1000, // 2 minutes
     gcTime: 5 * 60 * 1000, // 5 minutes
-    enabled:
-      typeof window !== "undefined" && !!localStorage.getItem("auth_token"),
+    enabled: typeof window !== "undefined" && isAuthenticated && hydrated,
     ...options,
   });
 };

@@ -1,18 +1,35 @@
+import { useUserStore } from "@/stores/user-store";
 import { AxiosError, AxiosInstance, AxiosResponse } from "axios";
+import { setAuthToken } from "./client";
 
 // Check if we're in development mode and API is likely not available
 const isDevelopment = process.env.NODE_ENV === "development";
 const isApiAvailable = process.env.NEXT_PUBLIC_API_BASE_URL !== undefined;
+
+let clearingAuth = false; // guard to avoid repeated clears
+
+// Helper to get current token (try store first, fallback to localStorage)
+const getCurrentToken = () => {
+  try {
+    const state = useUserStore.getState?.();
+    const tokenFromStore =
+      state?.user?.apiToken || state?.user?.apiToken || null;
+    if (tokenFromStore) return tokenFromStore;
+  } catch (e) {
+    // ignore
+  }
+  if (typeof window !== "undefined") {
+    return localStorage.getItem("auth_token");
+  }
+  return null;
+};
 
 // Request interceptor for authentication and logging
 export const setupRequestInterceptor = (apiClient: AxiosInstance) => {
   apiClient.interceptors.request.use(
     (config) => {
       // Add auth token if available and not already set
-      const token =
-        typeof window !== "undefined"
-          ? localStorage.getItem("auth_token")
-          : null;
+      const token = getCurrentToken();
       if (token && config.headers && !config.headers.Authorization) {
         config.headers.Authorization = `Bearer ${token}`;
       }
@@ -66,14 +83,28 @@ export const setupResponseInterceptor = (apiClient: AxiosInstance) => {
         const { status, data } = error.response;
 
         switch (status) {
-          case 401:
-            // Unauthorized - clear token and redirect to login
-            if (typeof window !== "undefined") {
-              localStorage.removeItem("auth_token");
-              // Always log auth errors
-              console.warn("🔒 Unauthorized access - token cleared");
+          case 401: {
+            // Unauthorized - clear token and user once
+            if (typeof window !== "undefined" && !clearingAuth) {
+              clearingAuth = true;
+              try {
+                console.warn("🔒 Unauthorized access - clearing auth state");
+                // Clear stored token and defaults
+                setAuthToken(null);
+                // Clear Zustand user state if available
+                const store = (useUserStore as any).getState?.();
+                store?.clearUser?.();
+              } catch (e) {
+                console.error("Error while clearing auth state:", e);
+              } finally {
+                // delay reset of guard to avoid tight loops but allow future handling
+                setTimeout(() => {
+                  clearingAuth = false;
+                }, 1000);
+              }
             }
             break;
+          }
           case 403:
             console.warn("🚫 Forbidden access");
             break;

@@ -1,8 +1,9 @@
 "use client";
 
+import { getAuthToken } from "@/services/api/infrastructure/client";
 import { useHydrated, useUserStore } from "@/stores/user-store";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 
 interface AuthWrapperProps {
   children: React.ReactNode;
@@ -11,71 +12,65 @@ interface AuthWrapperProps {
 export default function AuthWrapper({ children }: AuthWrapperProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const { isAuthenticated } = useUserStore();
+  const { isAuthenticated, setAuthenticated, setUser } = useUserStore();
   const hydrated = useHydrated();
-  const redirectingRef = useRef(false);
-  const lastPathnameRef = useRef<string | null>(null);
 
-  // Simple redirect logic - only run after hydration and when pathname changes
+  // Sync authentication state after hydration
   useEffect(() => {
-    if (!hydrated || redirectingRef.current) return;
+    if (!hydrated) return;
 
-    // Only process if this is the first render or pathname actually changed
-    const isFirstRender = lastPathnameRef.current === null;
-    const pathnameChanged = lastPathnameRef.current !== pathname;
+    const token = getAuthToken();
+    console.log("AuthWrapper - token exists:", !!token);
+    console.log("AuthWrapper - isAuthenticated:", isAuthenticated);
 
-    if (!isFirstRender && !pathnameChanged) {
+    if (token && !isAuthenticated) {
+      // If we have a token but not authenticated, set to authenticated
+      console.log("Setting authenticated to true due to token presence");
+      setAuthenticated(true);
+    } else if (!token && isAuthenticated) {
+      // If no token but authenticated, clear the user data
+      console.log("Clearing user data due to missing token");
+      setUser(null);
+    }
+  }, [hydrated, isAuthenticated, setAuthenticated, setUser]);
+
+  // Handle redirects after hydration
+  useEffect(() => {
+    if (!hydrated) return;
+
+    // If authenticated user is on login page, redirect to dashboard
+    if (isAuthenticated && pathname === "/login") {
+      router.push("/dashboard");
       return;
     }
-    lastPathnameRef.current = pathname;
 
-    const shouldRedirectToDashboard = isAuthenticated && pathname === "/login";
-    const shouldRedirectToLogin = !isAuthenticated && pathname !== "/login";
-
-    if (shouldRedirectToDashboard) {
-      console.log(
-        "AuthWrapper: Redirecting authenticated user from login to dashboard"
-      );
-      redirectingRef.current = true;
-      router.push("/dashboard");
-      setTimeout(() => {
-        redirectingRef.current = false;
-      }, 1000);
-    } else if (shouldRedirectToLogin) {
-      console.log("AuthWrapper: Redirecting unauthenticated user to login");
-      redirectingRef.current = true;
+    // If unauthenticated user is not on login page, redirect to login
+    if (!isAuthenticated && pathname !== "/login") {
       router.push("/login");
-      setTimeout(() => {
-        redirectingRef.current = false;
-      }, 1000);
+      return;
     }
-  }, [pathname, isAuthenticated, hydrated, router]);
+  }, [isAuthenticated, pathname, hydrated, router]);
 
-  // If on login page, show without auth check
-  if (pathname === "/login") {
-    return <>{children}</>;
-  }
-
-  // Show loading spinner while hydrating
+  // Show loading while hydrating
   if (!hydrated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-        <span className="ml-2">Checking authentication...</span>
+        <span className="ml-2">Loading...</span>
       </div>
     );
   }
 
-  // If authenticated, show the protected content
-  if (isAuthenticated) {
+  // Show content if authenticated or on login page
+  if (isAuthenticated || pathname === "/login") {
     return <>{children}</>;
   }
 
-  // If not authenticated and not on login page, show redirect message
+  // Show loading while redirecting unauthenticated users
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-      <span className="ml-2">Redirecting to login...</span>
+      <span className="ml-2">Redirecting...</span>
     </div>
   );
 }
