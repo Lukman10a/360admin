@@ -1,316 +1,349 @@
 /**
  * 360 Data Admin Dashboard - API Usage Examples
- * 
+ *
  * This file demonstrates how to use the API services and React Query hooks
  * in your components. Copy these patterns to implement real API integration.
  */
 
 // ============================================================================
-// BASIC API USAGE (Direct API calls)
+// CANONICAL HOOKS USAGE (Recommended)
 // ============================================================================
 
-import { api } from '../api'
+import {
+  useLogin,
+  useNetworkId,
+  useNetworkName,
+  useRegister,
+  useSearchTransactions,
+  useTransactions,
+  useUserProfile,
+} from "../hooks";
+import { LoginRequest } from "../types";
+
+// Example: Login component using hooks
+export const LoginComponent = () => {
+  const loginMutation = useLogin();
+
+  const handleLogin = (credentials: LoginRequest) => {
+    loginMutation.mutate(credentials, {
+      onSuccess: (data) => {
+        console.log("Login successful:", data);
+        // Handle success (e.g., redirect)
+      },
+      onError: (error) => {
+        console.error("Login failed:", error);
+        // Handle error (e.g., show toast)
+      },
+    });
+  };
+
+  return (
+    <div>
+      <button
+        onClick={() => handleLogin({ userName: "user", password: "pass" })}
+        disabled={loginMutation.isPending}
+      >
+        {loginMutation.isPending ? "Logging in..." : "Login"}
+      </button>
+    </div>
+  );
+};
+
+// Example: User Profile component using hooks
+export const UserProfileComponent = () => {
+  const { data: user, isLoading, error } = useUserProfile();
+
+  if (isLoading) return <div>Loading user profile...</div>;
+  if (error) return <div>Error: {error.message}</div>;
+
+  return (
+    <div>
+      <h2>Welcome, {user?.data?.userName}</h2>
+      <p>Email: {user?.data?.email}</p>
+      <p>Balance: ₦{user?.data?.balance}</p>
+    </div>
+  );
+};
+
+// Example: Transactions component using hooks
+export const TransactionsComponent = () => {
+  const { data: transactions, isLoading, error } = useTransactions();
+
+  if (isLoading) return <div>Loading transactions...</div>;
+  if (error) return <div>Error: {error.message}</div>;
+
+  return (
+    <div>
+      {transactions?.data?.map((transaction) => (
+        <div key={transaction._id}>
+          {transaction.trans_Id} - ₦{transaction.trans_amount}
+        </div>
+      ))}
+    </div>
+  );
+};
+
+// Example: Search transactions
+export const SearchTransactionsComponent = () => {
+  const {
+    data: searchResults,
+    isLoading,
+    error,
+  } = useSearchTransactions({
+    type: "airtime",
+  });
+
+  if (isLoading) return <div>Searching...</div>;
+  if (error) return <div>Error: {error.message}</div>;
+
+  return (
+    <div>
+      <h3>Search Results ({searchResults?.data?.transactions?.length || 0})</h3>
+      {searchResults?.data?.transactions?.map((transaction) => (
+        <div key={transaction._id}>
+          {transaction.trans_Id} - ₦{transaction.trans_amount}
+        </div>
+      ))}
+    </div>
+  );
+};
+
+// Example: Network utilities
+export const NetworkExample = () => {
+  const { data: networkName } = useNetworkName("1");
+  const { data: networkId } = useNetworkId("MTN");
+
+  return (
+    <div>
+      <p>Network ID "1" = {networkName}</p>
+      <p>Network "MTN" = ID {networkId}</p>
+    </div>
+  );
+};
+
+// ============================================================================
+// LEGACY API USAGE (For Reference)
+// ============================================================================
+
+import { ApiService } from "../api";
 
 // Example: Login user
 export const loginExample = async () => {
   try {
-    const loginData = await api.auth.login({
-      userName: 'admin@360data.com',
-      password: 'password123'
-    })
-    console.log('Login successful:', loginData)
-    return loginData
+    const loginData = await ApiService.login({
+      userName: "admin@360data.com",
+      password: "password123",
+    });
+    console.log("Login successful:", loginData);
+    return loginData;
   } catch (error) {
-    console.error('Login failed:', error)
-    throw error
+    console.error("Login failed:", error);
+    throw error;
   }
-}
+};
 
-// Example: Get all system users with pagination
-export const getSystemUsersExample = async () => {
+// Example: Get user profile
+export const getUserProfileExample = async () => {
   try {
-    const users = await api.users.system.getAll({
-      page: 1,
-      limit: 10,
-      search: 'admin'
-    })
-    console.log('System users:', users)
-    return users
+    const userProfile = await ApiService.getUserProfile();
+    console.log("User profile:", userProfile);
+    return userProfile;
   } catch (error) {
-    console.error('Failed to fetch users:', error)
-    throw error
+    console.error("Failed to fetch user profile:", error);
+    throw error;
   }
-}
+};
 
-// Example: Create new subscriber
-export const createSubscriberExample = async () => {
+// Example: Get all transactions
+export const getTransactionsExample = async () => {
   try {
-    const newSubscriber = await api.users.subscribers.create({
-      fullName: 'John Doe',
-      userName: 'johndoe',
-      email: 'john.doe@example.com',
-      phoneNumber: '+2348123456789',
-      password: 'password123'
-    })
-    console.log('Subscriber created:', newSubscriber)
-    return newSubscriber
+    const transactions = await ApiService.getAllTransactions();
+    console.log("Transactions:", transactions);
+    return transactions;
   } catch (error) {
-    console.error('Failed to create subscriber:', error)
-    throw error
+    console.error("Failed to fetch transactions:", error);
+    throw error;
   }
-}
+};
 
 // ============================================================================
 // REACT QUERY HOOKS USAGE (Recommended approach)
 // ============================================================================
 
-import { useState } from 'react'
-import { 
-  useSystemUsers, 
-  useCreateSystemUser, 
-  useSubscribers,
-  useCreateSubscriber,
-  useLogin,
-  useLogout
-} from '../hooks'
+import { useState } from "react";
 
-// Example: Authentication Component
+// Example: Complete Authentication Flow
 export const AuthExample = () => {
-  const loginMutation = useLogin()
-  const logoutMutation = useLogout()
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [user, setUser] = useState<any>(null)
-  const [isLoading, setIsLoading] = useState(false)
+  const loginMutation = useLogin();
+  const registerMutation = useRegister();
+  const { data: user, isLoading: userLoading } = useUserProfile();
+  const [isLogin, setIsLogin] = useState(true);
 
-  const handleLogin = async (email: string, password: string) => {
+  const handleAuth = async (formData: {
+    userName: string;
+    email: string;
+    password: string;
+  }) => {
     try {
-      await loginMutation.mutateAsync({ email, password })
-      console.log('Login successful!')
+      if (isLogin) {
+        await loginMutation.mutateAsync({
+          userName: formData.userName,
+          password: formData.password,
+        });
+        console.log("Login successful!");
+      } else {
+        await registerMutation.mutateAsync({
+          userName: formData.userName,
+          email: formData.email,
+          password: formData.password,
+          passwordCheck: formData.password,
+          phoneNumber: "+2348000000000",
+        });
+        console.log("Registration successful!");
+      }
     } catch (error) {
-      console.error('Login failed:', error)
+      console.error(`${isLogin ? "Login" : "Registration"} failed:`, error);
     }
-  }
+  };
 
-  const handleLogout = async () => {
-    try {
-      await logoutMutation.mutateAsync()
-      console.log('Logout successful!')
-    } catch (error) {
-      console.error('Logout failed:', error)
-    }
-  }
-
-  if (isLoading) return <div>Loading...</div>
+  if (userLoading) return <div>Loading...</div>;
 
   return (
     <div>
-      {isAuthenticated ? (
+      {user ? (
         <div>
-          <p>Welcome, {user?.fullName}!</p>
-          <button 
-            onClick={handleLogout}
-            disabled={logoutMutation.isPending}
-          >
-            {logoutMutation.isPending ? 'Logging out...' : 'Logout'}
-          </button>
+          <h2>Welcome, {user.data?.userName}!</h2>
+          <p>Email: {user.data?.email}</p>
+          <p>Balance: ₦{user.data?.balance}</p>
         </div>
       ) : (
         <div>
-          <button 
-            onClick={() => handleLogin('admin@360data.com', 'password123')}
-            disabled={loginMutation.isPending}
+          <div>
+            <button onClick={() => setIsLogin(!isLogin)}>
+              Switch to {isLogin ? "Register" : "Login"}
+            </button>
+          </div>
+          <button
+            onClick={() =>
+              handleAuth({
+                userName: "testuser",
+                email: "test@example.com",
+                password: "password123",
+              })
+            }
+            disabled={loginMutation.isPending || registerMutation.isPending}
           >
-            {loginMutation.isPending ? 'Logging in...' : 'Login'}
+            {loginMutation.isPending || registerMutation.isPending
+              ? `${isLogin ? "Logging in" : "Registering"}...`
+              : isLogin
+              ? "Login"
+              : "Register"}
           </button>
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
-// Example: System Users Management Component
-export const SystemUsersExample = () => {
-  const { data: users, isLoading, error } = useSystemUsers({ page: 1, limit: 10 })
-  const createUserMutation = useCreateSystemUser()
+// Example: Transactions Management Component
+export const TransactionsExample = () => {
+  const { data: transactions, isLoading, error, refetch } = useTransactions();
+  const { data: searchResults } = useSearchTransactions({ type: "data" });
 
-  const handleCreateUser = async () => {
-    try {
-      await createUserMutation.mutateAsync({
-        fullName: 'New Admin',
-        userName: 'newadmin',
-        email: 'newadmin@360data.com',
-        phoneNumber: '+2348000000000',
-        password: 'password123',
-        role: 'Admin'
-      })
-      console.log('User created successfully!')
-    } catch (error) {
-      console.error('Failed to create user:', error)
-    }
-  }
-
-  if (isLoading) return <div>Loading users...</div>
-  if (error) return <div>Error loading users: {error.message}</div>
-
-  return (
-    <div>
-      <h2>System Users ({users?.meta.total})</h2>
-      
-      <button 
-        onClick={handleCreateUser}
-        disabled={createUserMutation.isPending}
-      >
-        {createUserMutation.isPending ? 'Creating...' : 'Create User'}
-      </button>
-
-      <div>
-        {users?.data.map((user: any) => (
-          <div key={user.id}>
-            <h3>{user.fullName}</h3>
-            <p>Email: {user.email}</p>
-            <p>Role: {user.role}</p>
-            <p>Status: {user.status}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Pagination */}
-      <div>
-        Page {users?.meta.page} of {users?.meta.totalPages}
-      </div>
-    </div>
-  )
-}
-
-// Example: Subscribers Management Component
-export const SubscribersExample = () => {
-  const { data: subscribers, isLoading, error, refetch } = useSubscribers({ 
-    page: 1, 
-    limit: 20 
-  })
-  const createSubscriberMutation = useCreateSubscriber()
-
-  const handleCreateSubscriber = async () => {
-    try {
-      await createSubscriberMutation.mutateAsync({
-        fullName: 'Jane Smith',
-        userName: 'janesmith',
-        email: 'jane.smith@example.com',
-        phoneNumber: '+2348987654321',
-        password: 'password123'
-      })
-      console.log('Subscriber created successfully!')
-      // Data will automatically refetch due to React Query cache invalidation
-    } catch (error) {
-      console.error('Failed to create subscriber:', error)
-    }
-  }
-
-  const handleRefresh = () => {
-    refetch()
-  }
-
-  if (isLoading) return <div>Loading subscribers...</div>
-  if (error) return <div>Error: {error.message}</div>
+  if (isLoading) return <div>Loading transactions...</div>;
+  if (error) return <div>Error: {error.message}</div>;
 
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
-        <h2>Subscribers ({subscribers?.meta.total})</h2>
-        <div>
-          <button onClick={handleRefresh} className="mr-2">
-            Refresh
-          </button>
-          <button 
-            onClick={handleCreateSubscriber}
-            disabled={createSubscriberMutation.isPending}
-          >
-            {createSubscriberMutation.isPending ? 'Creating...' : 'Add Subscriber'}
-          </button>
-        </div>
+        <h2>All Transactions ({transactions?.data?.length || 0})</h2>
+        <button onClick={() => refetch()}>Refresh</button>
       </div>
 
-      <div className="grid gap-4">
-        {subscribers?.data.map((subscriber: any) => (
-          <div key={subscriber.id} className="border p-4 rounded">
-            <h3>{subscriber.fullName}</h3>
-            <p>Email: {subscriber.email}</p>
-            <p>Phone: {subscriber.phone}</p>
-            <p>Account: {subscriber.account}</p>
-            <p>Wallet: ₦{subscriber.wallet.toLocaleString()}</p>
-            <p>Status: {subscriber.status}</p>
+      <div className="mb-6">
+        <h3>
+          Data Transactions ({searchResults?.data?.transactions?.length || 0})
+        </h3>
+        {searchResults?.data?.transactions?.slice(0, 5).map((transaction) => (
+          <div key={transaction._id} className="border p-2 mb-2">
+            <span>{transaction.trans_Id}</span> -{" "}
+            <span>₦{transaction.trans_amount}</span>
+          </div>
+        ))}
+      </div>
+
+      <div>
+        <h3>Recent Transactions</h3>
+        {transactions?.data?.slice(0, 10).map((transaction) => (
+          <div key={transaction._id} className="border p-2 mb-2">
+            <div className="flex justify-between">
+              <span>{transaction.trans_Id}</span>
+              <span>₦{transaction.trans_amount}</span>
+            </div>
+            <div className="text-sm text-gray-600">
+              {transaction.trans_Type} - {transaction.trans_Network}
+            </div>
           </div>
         ))}
       </div>
     </div>
-  )
-}
+  );
+};
 
 // ============================================================================
 // ADVANCED USAGE PATTERNS
 // ============================================================================
 
-// Example: Error Handling with Toast Notifications
+// Example: Error Handling with API Calls
 export const ErrorHandlingExample = () => {
-  const createUserMutation = useCreateSystemUser()
+  const loginMutation = useLogin();
 
-  const handleCreateUserWithErrorHandling = async () => {
+  const handleLoginWithErrorHandling = async () => {
     try {
-      await createUserMutation.mutateAsync({
-        fullName: 'Test User',
-        userName: 'testuser',
-        email: 'test@360data.com',
-        phoneNumber: '+2348000000000',
-        password: 'password123',
-        role: 'Admin'
-      })
-      
+      await loginMutation.mutateAsync({
+        userName: "testuser",
+        password: "password123",
+      });
+
       // Success notification
-      console.log('✅ User created successfully!')
-      
+      console.log("✅ Login successful!");
     } catch (error: any) {
       // Error handling based on status code
-      if (error?.response?.status === 409) {
-        console.error('❌ User already exists')
+      if (error?.response?.status === 401) {
+        console.error("❌ Invalid credentials");
       } else if (error?.response?.status === 400) {
-        console.error('❌ Invalid user data')
+        console.error("❌ Invalid login data");
       } else {
-        console.error('❌ Failed to create user:', error.message)
+        console.error("❌ Login failed:", error.message);
       }
     }
-  }
+  };
 
   return (
-    <button onClick={handleCreateUserWithErrorHandling}>
-      Create User with Error Handling
+    <button
+      onClick={handleLoginWithErrorHandling}
+      disabled={loginMutation.isPending}
+    >
+      {loginMutation.isPending ? "Logging in..." : "Login with Error Handling"}
     </button>
-  )
-}
+  );
+};
 
-// Example: Optimistic Updates
-export const OptimisticUpdateExample = () => {
-  const { data: users } = useSystemUsers()
-  const updateUserMutation = useCreateSystemUser()
-
-  const handleOptimisticUpdate = async (userId: number) => {
-    // This would be implemented with React Query's optimistic updates
-    // See React Query documentation for detailed implementation
-    console.log('Implementing optimistic update for user:', userId)
-  }
+// Example: Network Utilities
+export const NetworkUtilitiesExample = () => {
+  const { data: networkName } = useNetworkName("1");
+  const { data: networkId } = useNetworkId("MTN");
 
   return (
     <div>
-      {users?.data.map((user: any) => (
-        <div key={user.id}>
-          <span>{user.fullName}</span>
-          <button onClick={() => handleOptimisticUpdate(user.id)}>
-            Update
-          </button>
-        </div>
-      ))}
+      <h3>Network Utilities</h3>
+      <p>Network ID "1" = {networkName || "Loading..."}</p>
+      <p>Network "MTN" = ID {networkId || "Loading..."}</p>
+      <p>Format Currency: {ApiService.formatCurrency(1500)}</p>
+      <p>Format Date: {ApiService.formatDate("2025-01-15T10:30:00Z")}</p>
     </div>
-  )
-}
+  );
+};
 
 // ============================================================================
 // CONFIGURATION EXAMPLES
@@ -325,33 +358,28 @@ export const configExample = {
   // The API client will automatically use these values
   apiBaseUrl: process.env.NEXT_PUBLIC_API_BASE_URL,
   apiTimeout: process.env.NEXT_PUBLIC_API_TIMEOUT,
-}
+};
 
-// Example: Custom Hook for Specific Business Logic
-export const useUserManagement = () => {
-  const { data: systemUsers } = useSystemUsers()
-  const { data: subscribers } = useSubscribers()
-  const createUser = useCreateSystemUser()
-  const createSubscriber = useCreateSubscriber()
+// Example: Custom Hook for Transaction Management
+export const useTransactionManagement = () => {
+  const { data: transactions, refetch } = useTransactions();
+  const { data: searchResults } = useSearchTransactions({ type: "airtime" });
 
-  const totalUsers = (systemUsers?.meta.total || 0) + (subscribers?.meta.total || 0)
-  
-  const createUserWithRole = async (userData: any, role: 'system' | 'subscriber') => {
-    if (role === 'system') {
-      return await createUser.mutateAsync(userData)
-    } else {
-      return await createSubscriber.mutateAsync(userData)
-    }
-  }
+  const totalTransactions = transactions?.data?.length || 0;
+  const airtimeTransactions = searchResults?.data?.transactions?.length || 0;
+
+  const refreshData = () => {
+    refetch();
+  };
 
   return {
-    totalUsers,
-    systemUsers: systemUsers?.data || [],
-    subscribers: subscribers?.data || [],
-    createUserWithRole,
-    isLoading: createUser.isPending || createSubscriber.isPending,
-  }
-}
+    totalTransactions,
+    airtimeTransactions,
+    transactions: transactions?.data || [],
+    airtimeTransactionsList: searchResults?.data?.transactions || [],
+    refreshData,
+  };
+};
 
 // ============================================================================
 // MIGRATION GUIDE: From Mock Data to Real API
@@ -361,28 +389,28 @@ export const useUserManagement = () => {
 STEP 1: Replace mock data arrays with API hooks
 
 // Before (with mock data):
-const [users, setUsers] = useState(mockUsers)
+const [transactions, setTransactions] = useState(mockTransactions)
 
 // After (with API):
-const { data: users, isLoading, error } = useSystemUsers()
+const { data: transactions, isLoading, error } = useTransactions()
 
 STEP 2: Replace form submissions with mutations
 
 // Before:
-const handleSubmit = (formData) => {
-  setUsers([...users, { ...formData, id: Date.now() }])
-  setIsModalOpen(false)
+const handleLogin = (formData) => {
+  // Mock login logic
+  setUser({ ...formData, id: Date.now() })
+  setIsLoggedIn(true)
 }
 
 // After:
-const createUserMutation = useCreateSystemUser()
-const handleSubmit = async (formData) => {
+const loginMutation = useLogin()
+const handleLogin = async (formData) => {
   try {
-    await createUserMutation.mutateAsync(formData)
-    setIsModalOpen(false)
-    // Data automatically updates due to cache invalidation
+    await loginMutation.mutateAsync(formData)
+    // User state automatically updated via React Query
   } catch (error) {
-    console.error('Failed to create user:', error)
+    console.error('Login failed:', error)
   }
 }
 
@@ -401,4 +429,24 @@ STEP 5: Test with real backend
 
 // Start with a single component, then gradually migrate others
 // Use React Query DevTools to debug API calls
-*/ 
+
+AVAILABLE HOOKS:
+- useLogin() - User authentication
+- useRegister() - User registration
+- useUserProfile() - Get current user profile
+- useTransactions() - Get all transactions
+- useSearchTransactions(params) - Search transactions with filters
+- useNetworkName(networkId) - Convert network ID to name
+- useNetworkId(networkName) - Convert network name to ID
+
+AVAILABLE API METHODS:
+- ApiService.login(request)
+- ApiService.register(request)
+- ApiService.getUserProfile()
+- ApiService.getAllTransactions()
+- ApiService.searchTransactions(params)
+- ApiService.formatCurrency(amount)
+- ApiService.formatDate(dateString)
+- ApiService.getNetworkName(networkId)
+- ApiService.getNetworkId(networkName)
+*/
