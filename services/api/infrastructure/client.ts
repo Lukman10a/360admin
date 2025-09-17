@@ -6,7 +6,7 @@ import { setupInterceptors } from "./interceptors";
 // API Configuration
 const API_CONFIG = {
   baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || API_BASE_URL,
-  timeout: 30000, // 30 seconds
+  timeout: 50000, // 50 seconds
   headers: {
     "Content-Type": "application/json",
   },
@@ -22,8 +22,7 @@ setupInterceptors(apiClient);
 export const setAuthToken = (token: string | null) => {
   if (token) {
     localStorage.setItem("auth_token", token);
-    // Set both Authorization and x-auth-token for compatibility
-    apiClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    // Only set x-auth-token to match API expectations
     apiClient.defaults.headers.common["x-auth-token"] = token;
 
     // Also set cookie for middleware
@@ -47,7 +46,6 @@ export const setAuthToken = (token: string | null) => {
     }
   } else {
     localStorage.removeItem("auth_token");
-    delete apiClient.defaults.headers.common["Authorization"];
     delete apiClient.defaults.headers.common["x-auth-token"];
 
     // Clear cookie

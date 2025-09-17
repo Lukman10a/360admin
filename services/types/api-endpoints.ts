@@ -453,10 +453,44 @@ export interface GetTransactionsResponse {
 export interface SearchTransactionsResponse {
   status: number;
   status_code: string;
-  data: Transaction[];
+  data: {
+    stat: [
+      {
+        network: "MTN SME";
+        profit: 0;
+        total_volume_sold: 0;
+      }
+    ];
+    totalPages: 0;
+    totalSales: 0;
+    totalProfit: 0;
+    transactions: Transaction[];
+  };
+  page: number;
+  limit: number;
   msg: string;
 }
 
+// {
+//     "status": 200,
+//     "status_code": "OK",
+//     "msg": "Transactions fetched",
+//     "data": {
+//         "stat": [
+//             {
+//                 "network": "MTN SME",
+//                 "profit": 0,
+//                 "total_volume_sold": 0
+//             }
+//         ],
+//         "totalPages": 0,
+//         "totalSales": 0,
+//         "totalProfit": 0,
+//         "transactions": []
+//     },
+//     "page": 1,
+//     "limit": 100
+// }
 // ============================================================================
 // FUND TRANSFER
 // ============================================================================

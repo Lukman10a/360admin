@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransactions } from "@/services/hooks/useApiQueries";
+import { useSearchTransactions } from "@/services/hooks/useApiQueries";
 import { Transaction } from "@/services/types/api-endpoints";
 import { useAuthLoading, useUser } from "@/stores/user-store";
 import {
@@ -18,7 +18,7 @@ export default function Dashboard() {
   const user = useUser();
   const userLoading = useAuthLoading();
   const { data: transactionsData, isLoading: transactionsLoading } =
-    useTransactions();
+    useSearchTransactions({ type: "" });
 
   // Helper function to get transaction icon
   const getTransactionIcon = (type: string) => {
@@ -38,16 +38,18 @@ export default function Dashboard() {
 
   // Process transactions data
   const transactions =
-    transactionsData?.data?.slice(0, 8).map((transaction: Transaction) => ({
-      id: transaction._id || transaction.trans_Id,
-      type: getTransactionTypeLabel(transaction.trans_Type),
-      description: `${transaction.trans_Network} ${transaction.trans_Type} for ${transaction.phone_number}`,
-      amount: transaction.trans_amount || 0,
-      time: transaction.createdAt
-        ? new Date(transaction.createdAt).toLocaleDateString()
-        : "Recent",
-      icon: getTransactionIcon(transaction.trans_Type),
-    })) || [];
+    transactionsData?.data?.transactions
+      .slice(0, 8)
+      .map((transaction: Transaction) => ({
+        id: transaction._id || transaction.trans_Id,
+        type: getTransactionTypeLabel(transaction.trans_Type),
+        description: `${transaction.trans_Network} ${transaction.trans_Type} for ${transaction.phone_number}`,
+        amount: transaction.trans_amount || 0,
+        time: transaction.createdAt
+          ? new Date(transaction.createdAt).toLocaleDateString()
+          : "Recent",
+        icon: getTransactionIcon(transaction.trans_Type),
+      })) || [];
 
   // Helper function to get transaction type label
   const getTransactionTypeLabel = (type: string) => {
