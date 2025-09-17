@@ -1,11 +1,10 @@
-import apiClient from '../infrastructure/client'
-import { ENDPOINTS } from '../infrastructure/endpoint'
 import {
+  FundTransferError,
   TransferFundRequest,
   TransferFundResponse,
-  FundTransferError,
-  ApiResponse
-} from '../../types'
+} from "../../types";
+import apiClient from "../infrastructure/client";
+import { ENDPOINTS } from "../infrastructure/endpoint";
 
 /**
  * Fund Transfer API Service
@@ -27,17 +26,17 @@ export class FundTransferService {
         request,
         {
           headers: {
-            'x-auth-token': userToken,
-            'Content-Type': 'application/json',
+            "x-auth-token": userToken,
+            "Content-Type": "application/json",
           },
         }
-      )
-      return response.data
+      );
+      return response.data;
     } catch (error: any) {
       if (error.response?.data) {
-        throw new Error(error.response.data.msg || 'Transfer failed')
+        throw new Error(error.response.data.msg || "Transfer failed");
       }
-      throw new Error('Network error occurred during transfer')
+      throw new Error("Network error occurred during transfer");
     }
   }
 
@@ -47,26 +46,20 @@ export class FundTransferService {
    */
   static async adminTransferFund(
     request: TransferFundRequest,
-    adminToken: string
+    adminToken?: string
   ): Promise<TransferFundResponse> {
     try {
       const response = await apiClient.post<TransferFundResponse>(
         ENDPOINTS.FUND_TRANSFER.ADMIN_TRANSFER,
-        request,
-        {
-          headers: {
-            'Authorization': `Bearer ${adminToken}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      )
-      return response.data
+        request
+      );
+      return response.data;
     } catch (error: any) {
       if (error.response?.data) {
-        const errorData = error.response.data as FundTransferError
-        throw new Error(errorData.msg || 'Admin transfer failed')
+        const errorData = error.response.data as FundTransferError;
+        throw new Error(errorData.msg || "Admin transfer failed");
       }
-      throw new Error('Network error occurred during admin transfer')
+      throw new Error("Network error occurred during admin transfer");
     }
   }
 
@@ -74,25 +67,26 @@ export class FundTransferService {
    * Validate transfer request data
    */
   static validateTransferRequest(request: TransferFundRequest): string[] {
-    const errors: string[] = []
-    
-    if (!request.userName || request.userName.trim() === '') {
-      errors.push('Username is required')
+    const errors: string[] = [];
+
+    if (!request.userName || request.userName.trim() === "") {
+      errors.push("Username is required");
     }
-    
+
     if (!request.amount || request.amount <= 0) {
-      errors.push('Amount must be greater than 0')
+      errors.push("Amount must be greater than 0");
     }
-    
+
     if (request.amount > 1000000) {
-      errors.push('Amount cannot exceed ₦1,000,000')
+      errors.push("Amount cannot exceed ₦1,000,000");
     }
-    
-    return errors
+
+    return errors;
   }
 }
 
 // Export individual functions for convenience
-export const transferFundToUser = FundTransferService.transferFundToUser
-export const adminTransferFund = FundTransferService.adminTransferFund
-export const validateTransferRequest = FundTransferService.validateTransferRequest
+export const transferFundToUser = FundTransferService.transferFundToUser;
+export const adminTransferFund = FundTransferService.adminTransferFund;
+export const validateTransferRequest =
+  FundTransferService.validateTransferRequest;

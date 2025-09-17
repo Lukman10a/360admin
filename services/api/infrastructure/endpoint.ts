@@ -49,5 +49,9 @@ export const ENDPOINTS = {
   },
   PRICES: {
     GET_ALL: "/prices", // Supports POST with network parameter
+    AIRTIME: "/prices/airtime", //NOT AVAILABLE ON THE BACKEND YET
+    DATA: "/prices/data", //NOT AVAILABLE ON THE BACKEND YET
+    ELECTRICITY: "/prices/electricity", //NOT AVAILABLE ON THE BACKEND YET
+    CABLE_TV: "/prices/cabletv", //NOT AVAILABLE ON THE BACKEND YET
   },
 } as const;

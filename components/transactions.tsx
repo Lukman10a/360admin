@@ -1,6 +1,6 @@
 "use client";
 
-import { useSearchTransactions, useTransactions } from "@/services/hooks";
+import { useSearchTransactions } from "@/services/hooks";
 import { TransactionSearchParams } from "@/services/types";
 import { Search } from "lucide-react";
 import { useState } from "react";
@@ -15,10 +15,6 @@ export default function Transactions() {
     status: "",
   });
 
-  // Fetch all transactions
-  const { data: transactionsData, isLoading: transactionsLoading } =
-    useTransactions();
-
   // Search transactions when search params are provided
   const searchParamsObj = Object.fromEntries(
     Object.entries(searchParams).filter(([_, v]) => v !== "")
@@ -30,7 +26,7 @@ export default function Transactions() {
   );
 
   // Use search results if available, otherwise use all transactions
-  const transactions = searchData?.data || transactionsData?.data || [];
+  const transactions = searchData?.data.transactions || [];
 
   const handleSearch = (field: string, value: string) => {
     setSearchParams((prev) => ({ ...prev, [field]: value }));
@@ -100,7 +96,7 @@ export default function Transactions() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {transactionsLoading || searchLoading ? (
+              {searchLoading ? (
                 // Loading skeleton
                 Array.from({ length: 5 }).map((_, index) => (
                   <tr key={index} className="animate-pulse">

@@ -1,0 +1,26 @@
+{
+  "extends": ["next/core-web-vitals"],
+  "rules": {
+    "no-restricted-imports": [
+      "error",
+      {
+        "patterns": [
+          {
+            "group": ["@/services/api/infrastructure/**"],
+            "message": "Direct imports from infrastructure are not allowed. Use hooks from '@/services/hooks' instead."
+          },
+          {
+            "group": ["axios"],
+            "message": "Direct axios imports are not allowed. Use hooks from '@/services/hooks' instead."
+          }
+        ],
+        "paths": [
+          {
+            "name": "@/services/api/api-service",
+            "message": "Direct ApiService imports are discouraged. Use hooks from '@/services/hooks' instead."
+          }
+        ]
+      }
+    ]
+  }
+}

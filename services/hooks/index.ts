@@ -1,4 +1,14 @@
 // ============================================================================
+// SERVICES HOOKS BARREL EXPORT
+// Canonical way to import API hooks in this project
+//
+// Usage:
+// import { useLogin, useTransactions, useSearchTransactions } from '@/services/hooks'
+//
+// This ensures consistency and makes it easy to find the right hook.
+// ============================================================================
+
+// ============================================================================
 // REACT HOOKS INDEX
 // Central export point for all custom React hooks
 // ============================================================================
@@ -99,3 +109,14 @@ export const allHooks = {
   ...authHooks,
   ...dataHooks,
 };
+
+// ============================================================================
+// DEPRECATED: These will be removed in future versions
+// Use the exports above instead
+// ============================================================================
+
+// Legacy exports (will show deprecation warnings)
+export {
+  useLogin as useAuthLogin,
+  useRegister as useAuthRegister,
+} from "./useAuth";

@@ -1,6 +1,6 @@
 "use client";
 
-import { formatCurrency } from "@/services/api/api-service";
+import { formatCurrency } from "@/lib/utils";
 import { useUsers } from "@/services/hooks";
 import { User } from "@/services/types/api-endpoints";
 import { ArrowDown, Loader2, Plus, Search } from "lucide-react";
