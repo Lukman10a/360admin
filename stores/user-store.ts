@@ -4,6 +4,7 @@ import { createJSONStorage, persist } from "zustand/middleware";
 
 interface UserState {
   user: User | null;
+  token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
@@ -12,6 +13,7 @@ interface UserState {
 
 interface UserActions {
   setUser: (user: User | null) => void;
+  setToken: (token: string | null) => void;
   setAuthenticated: (authenticated: boolean) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
@@ -27,6 +29,7 @@ export const useUserStore = create<UserStore>()(
     (set, get) => ({
       // Initial state
       user: null,
+      token: null,
       isAuthenticated: false,
       isLoading: false,
       error: null,
@@ -41,6 +44,11 @@ export const useUserStore = create<UserStore>()(
           error: null,
         });
         console.log("Zustand store updated, isAuthenticated:", !!user);
+      },
+
+      setToken: (token) => {
+        console.log("Zustand setToken called with:", token);
+        set({ token });
       },
 
       setAuthenticated: (authenticated) => {
@@ -61,6 +69,7 @@ export const useUserStore = create<UserStore>()(
       clearUser: () =>
         set({
           user: null,
+          token: null,
           isAuthenticated: false,
           error: null,
           isLoading: false,
@@ -78,6 +87,7 @@ export const useUserStore = create<UserStore>()(
       logout: () =>
         set({
           user: null,
+          token: null,
           isAuthenticated: false,
           error: null,
           isLoading: false,
@@ -88,11 +98,12 @@ export const useUserStore = create<UserStore>()(
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         user: state.user,
+        token: state.token,
         isAuthenticated: state.isAuthenticated,
       }),
       onRehydrateStorage: () => (state) => {
         if (state) {
-          // Just set hydrated to true, don't modify other state here
+          // Just mark hydrated true; persist middleware will restore the token/state
           state.hydrated = true;
         }
       },
@@ -102,6 +113,7 @@ export const useUserStore = create<UserStore>()(
 
 // Selectors for common use cases
 export const useUser = () => useUserStore((state) => state.user);
+export const useAuthToken = () => useUserStore((state) => state.token);
 export const useIsAuthenticated = () =>
   useUserStore((state) => state.isAuthenticated);
 export const useAuthLoading = () => useUserStore((state) => state.isLoading);
@@ -120,8 +132,9 @@ export const useUserType = () =>
 export const useUserFullName = () =>
   useUserStore((state) => state.user?.fullName || "");
 
-// Actions
+// Actions (per-action hooks)
 export const useSetUser = () => useUserStore((state) => state.setUser);
+export const useSetToken = () => useUserStore((state) => state.setToken);
 export const useSetAuthenticated = () =>
   useUserStore((state) => state.setAuthenticated);
 export const useSetLoading = () => useUserStore((state) => state.setLoading);

@@ -1,7 +1,6 @@
 "use client";
 
-import { getAuthToken } from "@/services/api/infrastructure/client";
-import { useHydrated, useUserStore } from "@/stores/user-store";
+import { useAuthToken, useHydrated, useUserStore } from "@/stores/user-store";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 
@@ -14,12 +13,12 @@ export default function AuthWrapper({ children }: AuthWrapperProps) {
   const pathname = usePathname();
   const { isAuthenticated, setAuthenticated, setUser } = useUserStore();
   const hydrated = useHydrated();
+  const token = useAuthToken();
 
   // Sync authentication state after hydration
   useEffect(() => {
     if (!hydrated) return;
 
-    const token = getAuthToken();
     console.log("AuthWrapper - token exists:", !!token);
     console.log("AuthWrapper - isAuthenticated:", isAuthenticated);
 
@@ -32,7 +31,7 @@ export default function AuthWrapper({ children }: AuthWrapperProps) {
       console.log("Clearing user data due to missing token");
       setUser(null);
     }
-  }, [hydrated, isAuthenticated, setAuthenticated, setUser]);
+  }, [hydrated, isAuthenticated, setAuthenticated, setUser, token]);
 
   // Handle redirects after hydration
   useEffect(() => {

@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export default function DashboardLayout({
   children,
@@ -36,25 +36,8 @@ export default function DashboardLayout({
   const user = useUser();
   const userLoading = useAuthLoading();
   const logout = useStoreLogout();
-  const [persistedUser, setPersistedUser] = useState<any | null>(null);
 
-  // Read persisted user from localStorage in case Zustand hasn't hydrated yet
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    try {
-      const raw = localStorage.getItem("user-store");
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        // Persisted Zustand format wraps state under "state"
-        const pUser = parsed?.state?.user || null;
-        if (pUser) setPersistedUser(pUser);
-      }
-    } catch (e) {
-      console.warn("Failed to parse persisted user-store:", e);
-    }
-  }, []);
-
-  const displayedUser = user || persistedUser;
+  const displayedUser = user;
 
   const navItems = [
     { name: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },

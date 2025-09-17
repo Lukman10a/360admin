@@ -30,7 +30,7 @@ export const ENDPOINTS = {
   },
   PLANS: {
     PRICES: (networkId: string) => `/dataPlan/prices/${networkId}`,
-    GET_ALL: () => `/dataPlan?plan_type=SME`,
+    GET_ALL: () => `/dataPlan`,
     ADD: "/dataPlan/add",
     UPDATE: "/dataPlan/update",
     DELETE: (planId: string) => `/dataPlan/delete?planId=${planId}`,

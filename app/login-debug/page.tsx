@@ -44,13 +44,10 @@ export default function LoginDebugPage() {
           "Store isAuthenticated:",
           useUserStore.getState().isAuthenticated
         );
+        console.log("Store auth_token:", useUserStore.getState().token);
         console.log(
-          "LocalStorage auth_token:",
-          localStorage.getItem("auth_token")
-        );
-        console.log(
-          "LocalStorage user-store:",
-          localStorage.getItem("user-store")
+          "Persisted user-store (raw):",
+          JSON.stringify(useUserStore.getState())
         );
       }, 100);
     } catch (error) {
@@ -69,8 +66,7 @@ export default function LoginDebugPage() {
             <div>User: {user ? JSON.stringify(user, null, 2) : "null"}</div>
             <div>Is Authenticated: {String(isAuthenticated)}</div>
             <div>
-              Auth Token:{" "}
-              {localStorage.getItem("auth_token") ? "EXISTS" : "NULL"}
+              Auth Token: {useUserStore.getState().token ? "EXISTS" : "NULL"}
             </div>
           </div>
         </div>

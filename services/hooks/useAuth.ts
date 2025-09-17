@@ -144,6 +144,7 @@ export const useRegister = (
     onSuccess: (data) => {
       // Set auth token
       setAuthToken(data.token);
+      console.log("✓ Auth token set:", data.token.substring(0, 20) + "...");
 
       // Invalidate user profile to refetch with new token
       queryClient.invalidateQueries({ queryKey: ["user", "profile"] });

@@ -1,3 +1,4 @@
+import { useUserStore } from "@/stores/user-store";
 import axios, { AxiosInstance } from "axios";
 import { API_BASE_URL } from "./endpoint";
 import { setupInterceptors } from "./interceptors";
@@ -31,6 +32,19 @@ export const setAuthToken = (token: string | null) => {
         7 * 24 * 60 * 60
       }`; // 7 days
     }
+
+    // Update Zustand store token synchronously so interceptors can read it
+    try {
+      const store = (useUserStore as any).getState?.();
+      store?.setToken?.(token);
+    } catch (e) {
+      // fallback: setState
+      try {
+        (useUserStore as any).setState?.({ token });
+      } catch (err) {
+        // ignore
+      }
+    }
   } else {
     localStorage.removeItem("auth_token");
     delete apiClient.defaults.headers.common["Authorization"];
@@ -41,14 +55,34 @@ export const setAuthToken = (token: string | null) => {
       document.cookie =
         "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
     }
+
+    // Clear token from Zustand store
+    try {
+      const store = (useUserStore as any).getState?.();
+      store?.setToken?.(null);
+    } catch (e) {
+      try {
+        (useUserStore as any).setState?.({ token: null });
+      } catch (err) {
+        // ignore
+      }
+    }
   }
 };
 
 // Helper function to get auth token
 export const getAuthToken = (): string | null => {
-  return typeof window !== "undefined"
-    ? localStorage.getItem("auth_token")
-    : null;
+  // Prefer token from store if available
+  try {
+    const store = (useUserStore as any).getState?.();
+    const t = store?.token ?? null;
+    return t;
+  } catch (e) {
+    // ignore
+  }
+
+  // If not available in store (server-side or unexpected), return null
+  return null;
 };
 
 // Helper function to check if API is available

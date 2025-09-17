@@ -8,19 +8,17 @@ const isApiAvailable = process.env.NEXT_PUBLIC_API_BASE_URL !== undefined;
 
 let clearingAuth = false; // guard to avoid repeated clears
 
-// Helper to get current token (try store first, fallback to localStorage)
+// Helper to get current token (try store first)
 const getCurrentToken = () => {
   try {
-    const state = useUserStore.getState?.();
-    const tokenFromStore =
-      state?.user?.apiToken || state?.user?.apiToken || null;
+    const state = (useUserStore as any).getState?.();
+    const tokenFromStore = state?.token || null;
     if (tokenFromStore) return tokenFromStore;
   } catch (e) {
     // ignore
   }
-  if (typeof window !== "undefined") {
-    return localStorage.getItem("auth_token");
-  }
+
+  // Do not read directly from localStorage here — rely on the Zustand store as the single source of truth.
   return null;
 };
 
@@ -28,10 +26,15 @@ const getCurrentToken = () => {
 export const setupRequestInterceptor = (apiClient: AxiosInstance) => {
   apiClient.interceptors.request.use(
     (config) => {
+      // Remove any existing Authorization header to avoid conflicts
+      if (config.headers.Authorization) {
+        delete config.headers.Authorization;
+      }
+
       // Add auth token if available and not already set
       const token = getCurrentToken();
-      if (token && config.headers && !config.headers.Authorization) {
-        config.headers.Authorization = `Bearer ${token}`;
+      if (token && config.headers && !config.headers["x-auth-token"]) {
+        config.headers["x-auth-token"] = `${token}`;
       }
 
       // Log requests in development
