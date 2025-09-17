@@ -5,18 +5,21 @@ This document describes the fund transfer functionality implemented in the 360 D
 ## Overview
 
 The fund transfer system provides two main operations:
+
 1. **User-to-User Transfer**: Users can transfer funds to other users using their x-auth-token
 2. **Admin Transfer**: Administrators can transfer funds to users using Bearer token authentication
 
 ## API Endpoints
 
 ### 1. User Wallet Transfer
+
 - **Endpoint**: `POST /auth/transferFund`
 - **Authentication**: `x-auth-token` header
 - **Description**: Allows users to transfer funds to other users
 - **Use Case**: Peer-to-peer fund transfers
 
 ### 2. Admin Transfer
+
 - **Endpoint**: `POST /admin/transferFund`
 - **Authentication**: `Bearer` token in Authorization header
 - **Description**: Allows administrators to transfer funds to users
@@ -28,34 +31,37 @@ Both endpoints accept the same request body:
 
 ```typescript
 interface TransferFundRequest {
-  userName: string;  // username or email of recipient
-  amount: number;    // amount to transfer
+  userName: string; // username or email of recipient
+  amount: number; // amount to transfer
 }
 ```
 
 ## Response Format
 
 ### Success Response (200 OK)
+
 ```typescript
 interface TransferFundResponse {
-  msg: string;       // Success message
-  amount: number;    // Transferred amount
-  receipt?: {        // Optional receipt details
+  msg: string; // Success message
+  amount: number; // Transferred amount
+  receipt?: {
+    // Optional receipt details
     transactionId: string;
     timestamp: string;
     fromUser: string;
     toUser: string;
     amount: number;
-    status: 'Success' | 'Failed' | 'Pending';
+    status: "Success" | "Failed" | "Pending";
   };
 }
 ```
 
 ### Error Response
+
 ```typescript
 interface FundTransferError {
-  msg: string;       // Error message
-  code?: string;     // Optional error code
+  msg: string; // Error message
+  code?: string; // Optional error code
 }
 ```
 
@@ -64,19 +70,19 @@ interface FundTransferError {
 ### Using the Service Class
 
 ```typescript
-import { FundTransferService } from '@/services/api/fund-transfer'
+import { FundTransferService } from "@/services/api/fund-transfer";
 
 // User-to-user transfer
 const result = await FundTransferService.transferFundToUser(
-  { userName: 'john_doe', amount: 5000 },
-  'user-auth-token'
-)
+  { userName: "john_doe", amount: 5000 },
+  "user-auth-token"
+);
 
 // Admin transfer
 const result = await FundTransferService.adminTransferFund(
-  { userName: 'jane_doe', amount: 10000 },
-  'admin-bearer-token'
-)
+  { userName: "jane_doe", amount: 10000 },
+  "admin-bearer-token"
+);
 ```
 
 ### Using the React Hook
@@ -85,11 +91,11 @@ const result = await FundTransferService.adminTransferFund(
 import { useFundTransfer } from '@/services/hooks/useFundTransfer'
 
 function TransferComponent() {
-  const { 
-    transferFundToUser, 
-    adminTransferFund, 
-    isLoading, 
-    error 
+  const {
+    transferFundToUser,
+    adminTransferFund,
+    isLoading,
+    error
   } = useFundTransfer()
 
   const handleUserTransfer = async () => {
@@ -118,10 +124,7 @@ function TransferComponent() {
 
   return (
     <div>
-      {isLoading && <p>Processing transfer...</p>}
-      {error && <p className="error">{error}</p>}
-      <button onClick={handleUserTransfer}>Transfer to User</button>
-      <button onClick={handleAdminTransfer}>Admin Transfer</button>
+      {isLoading && <p>Processing transfer...</p>
     </div>
   )
 }
@@ -130,32 +133,32 @@ function TransferComponent() {
 ### Direct API Client Usage
 
 ```typescript
-import apiClient from '@/services/api/client'
-import { ENDPOINTS } from '@/services/api/endpoint'
+import apiClient from "@/services/api/client";
+import { ENDPOINTS } from "@/services/api/endpoint";
 
 // User transfer
 const userResponse = await apiClient.post(
   ENDPOINTS.FUND_TRANSFER.USER_WALLET,
-  { userName: 'recipient', amount: 1000 },
+  { userName: "recipient", amount: 1000 },
   {
     headers: {
-      'x-auth-token': 'user-token',
-      'Content-Type': 'application/json',
+      "x-auth-token": "user-token",
+      "Content-Type": "application/json",
     },
   }
-)
+);
 
 // Admin transfer
 const adminResponse = await apiClient.post(
   ENDPOINTS.FUND_TRANSFER.ADMIN_TRANSFER,
-  { userName: 'recipient', amount: 5000 },
+  { userName: "recipient", amount: 5000 },
   {
     headers: {
-      'Authorization': 'Bearer admin-token',
-      'Content-Type': 'application/json',
+      Authorization: "Bearer admin-token",
+      "Content-Type": "application/json",
     },
   }
-)
+);
 ```
 
 ## Validation
@@ -163,14 +166,14 @@ const adminResponse = await apiClient.post(
 The service includes built-in validation:
 
 ```typescript
-import { validateTransferRequest } from '@/services/api/fund-transfer'
+import { validateTransferRequest } from "@/services/api/fund-transfer";
 
-const request = { userName: '', amount: -100 }
-const errors = validateTransferRequest(request)
+const request = { userName: "", amount: -100 };
+const errors = validateTransferRequest(request);
 // Returns: ['Username is required', 'Amount must be greater than 0']
 
-const validRequest = { userName: 'valid_user', amount: 1000 }
-const errors = validateTransferRequest(validRequest)
+const validRequest = { userName: "valid_user", amount: 1000 };
+const errors = validateTransferRequest(validRequest);
 // Returns: [] (no errors)
 ```
 

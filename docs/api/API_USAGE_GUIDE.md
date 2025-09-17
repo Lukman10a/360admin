@@ -109,7 +109,7 @@ import { useTransactions } from "@/services/hooks";
 
 ## Need Help?
 
-- Check `services/examples/api-example.tsx` for working examples
+- Check `docs/services/api-example.tsx` for working examples
 - See `docs/README.md` for detailed documentation
 
 ---

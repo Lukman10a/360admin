@@ -8,27 +8,27 @@ Welcome to the 360 Admin Dashboard documentation! This index provides quick acce
 
 ## 🚀 Getting Started
 
-- **[API Documentation](./API_DOCUMENTATION.md)** - Comprehensive guide to using the API services, hooks, and best practices
-- **[Environment Setup](./ENVIRONMENT_SETUP.md)** - Instructions for setting up the development environment
-- **[Project Brief](./projectbrief.md)** - High-level project overview and objectives
-- **[API Usage Guide](./API_USAGE_GUIDE.md)** - Detailed guide for using the API services
-- **[TanStack Query Usage](./TANSTACK_QUERY_USAGE.md)** - Guide for using React Query in the project
+- **[API Documentation](./api/API_DOCUMENTATION.md)** - Comprehensive guide to using the API services, hooks, and best practices
+- **[Environment Setup](./getting-started/ENVIRONMENT_SETUP.md)** - Instructions for setting up the development environment
+- **[Project Brief](./getting-started/projectbrief.md)** - High-level project overview and objectives
+- **[API Usage Guide](./api/API_USAGE_GUIDE.md)** - Detailed guide for using the API services
+- **[TanStack Query Usage](./api/TANSTACK_QUERY_USAGE.md)** - Guide for using React Query in the project
 
 ## 🏗️ Architecture & Design
 
-- **[System Patterns](./systemPatterns.md)** - Architectural patterns and design decisions
-- **[Technical Context](./techContext.md)** - Technical stack and implementation details
-- **[Product Context](./productContext.md)** - Product vision and requirements
-- **[Active Context](./activeContext.md)** - Current development focus and progress
-- **[Progress](./progress.md)** - Development progress and milestones
+- **[System Patterns](./architecture/systemPatterns.md)** - Architectural patterns and design decisions
+- **[Technical Context](./architecture/techContext.md)** - Technical stack and implementation details
+- **[Product Context](./architecture/productContext.md)** - Product vision and requirements
+- **[Active Context](./operations/activeContext.md)** - Current development focus and progress
+- **[Progress](./operations/progress.md)** - Development progress and milestones
 
 ## 🔧 Services & APIs
 
-- **[API Alignment Summary](./API_ALIGNMENT_SUMMARY.md)** - Summary of API consolidation and alignment
-- **[Organization Overview](./ORGANIZATION_OVERVIEW.md)** - Overview of the service organization structure
-- **[User Store Guide](./USER_STORE_README.md)** - Guide for using the user store functionality
-- **[Fund Transfer Guide](./FUND_TRANSFER_README.md)** - Guide for fund transfer operations
-- **[Endpoints Verification](./ENDPOINTS_VERIFICATION.md)** - Verification of API endpoints
+- **[API Alignment Summary](./architecture/API_ALIGNMENT_SUMMARY.md)** - Summary of API consolidation and alignment
+- **[Organization Overview](./architecture/ORGANIZATION_OVERVIEW.md)** - Overview of the service organization structure
+- **[User Store Guide](./services/USER_STORE_README.md)** - Guide for using the user store functionality
+- **[Fund Transfer Guide](./services/FUND_TRANSFER_README.md)** - Guide for fund transfer operations
+- **[Endpoints Verification](./api/ENDPOINTS_VERIFICATION.md)** - Verification of API endpoints
 
 ## 📋 Development Guidelines
 
@@ -88,22 +88,29 @@ if (error) return <ErrorMessage error={error} />;
 
 ```text
 docs/
-├── API_DOCUMENTATION.md      # Main API documentation
-├── ENVIRONMENT_SETUP.md      # Environment setup guide
-├── API_USAGE_GUIDE.md        # API usage guide
-├── TANSTACK_QUERY_USAGE.md   # React Query usage guide
-├── API_ALIGNMENT_SUMMARY.md  # API consolidation summary
-├── ORGANIZATION_OVERVIEW.md  # Service organization overview
-├── USER_STORE_README.md      # User store documentation
-├── FUND_TRANSFER_README.md   # Fund transfer guide
-├── ENDPOINTS_VERIFICATION.md # Endpoints verification
-├── projectbrief.md           # Project brief
-├── systemPatterns.md         # System patterns
-├── techContext.md            # Technical context
-├── productContext.md         # Product context
-├── activeContext.md          # Active development context
-├── progress.md               # Development progress
-└── README.md                 # Documentation index
+├── README.md                 # Documentation index (this file)
+├── getting-started/
+│   ├── ENVIRONMENT_SETUP.md  # Environment setup guide
+│   └── projectbrief.md       # Project brief
+├── architecture/
+│   ├── systemPatterns.md
+│   ├── techContext.md
+│   ├── productContext.md
+│   ├── ORGANIZATION_OVERVIEW.md
+│   └── API_ALIGNMENT_SUMMARY.md
+├── api/
+│   ├── API_DOCUMENTATION.md
+│   ├── API_USAGE_GUIDE.md
+│   ├── TANSTACK_QUERY_USAGE.md
+│   └── ENDPOINTS_VERIFICATION.md
+├── services/
+│   ├── FUND_TRANSFER_README.md
+│   └── USER_STORE_README.md
+├── operations/
+│   ├── activeContext.md
+│   └── progress.md
+└── resources/
+    └── Afoo.postman_collection.json
 ```
 
 ## 🤝 Contributing to Documentation
