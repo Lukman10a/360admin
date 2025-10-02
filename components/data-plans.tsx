@@ -209,7 +209,7 @@ export default function DataPlans() {
     });
   };
 
-  const handleEditPlan = (plan) => {
+  const handleEditPlan = (plan: any) => {
     setSelectedPlan(plan);
     setIsUpdateModalOpen(true);
   };

@@ -136,12 +136,15 @@ export const useUserProfile = (
 };
 
 // Get All Users Query (Admin only)
-export const useUsers = (options?: UseQueryOptions<GetUsersResponse>) => {
+export const useUsers = (
+  params?: { page?: number; limit?: number; search?: string },
+  options?: UseQueryOptions<GetUsersResponse>
+) => {
   const isAuthenticated = useIsAuthenticated();
   const hydrated = useHydrated();
   return useQuery({
-    queryKey: queryKeys.user.all,
-    queryFn: () => ApiService.getAllUsers(),
+    queryKey: [...queryKeys.user.all, params],
+    queryFn: () => ApiService.getAllUsers(params),
     staleTime: 2 * 60 * 1000, // 2 minutes
     gcTime: 5 * 60 * 1000, // 5 minutes
     enabled: typeof window !== "undefined" && isAuthenticated && hydrated,

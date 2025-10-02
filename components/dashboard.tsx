@@ -73,24 +73,28 @@ export default function Dashboard() {
       name: "Airtime",
       fullName: "Airtime TopUp",
       icon: Smartphone,
+      url: `/services/airtime`,
     },
     {
       id: 2,
       name: "Data",
       fullName: "Data Bundle",
       icon: Wifi,
+      url: `/services/data`,
     },
     {
       id: 3,
       name: "Electricity",
       fullName: "Electricity",
       icon: Zap,
+      url: `/services/electricity`,
     },
     {
       id: 4,
       name: "Conversion",
       fullName: "Airtime Conversion",
       icon: RefreshCw,
+      url: `/services/conversion`,
     },
   ];
 
@@ -186,7 +190,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 md:gap-4 mb-6">
         {services.map((service) => (
           <Link
-            href="/services"
+            href={`${service.url}`}
             key={service.id}
             className="bg-white p-2 md:p-4 rounded-lg border border-gray-200 flex flex-col items-center justify-center hover:shadow-md transition-all hover:border-indigo-200"
           >

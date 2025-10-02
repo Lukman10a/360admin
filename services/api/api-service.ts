@@ -64,7 +64,7 @@ import { adminApi } from "./domain/admin";
 import { authApi } from "./domain/auth";
 import { contactsApi } from "./domain/contacts";
 import { pricesApi } from "./domain/prices";
-import { buyServicesApi, dataPlansApi } from "./domain/services";
+import { buyServicesApi, dataPlansApi, usersApi } from "./domain/services";
 import { fundTransferApi, transactionsApi } from "./domain/transactions";
 
 /**
@@ -157,8 +157,12 @@ export class ApiService {
   /**
    * Get all users (admin only)
    */
-  static async getAllUsers(): Promise<GetUsersResponse> {
-    return authApi.getAllUsers();
+  static async getAllUsers(params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+  }): Promise<GetUsersResponse> {
+    return usersApi.getAll(params);
   }
 
   // ============================================================================

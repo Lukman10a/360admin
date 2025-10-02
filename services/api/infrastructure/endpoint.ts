@@ -44,6 +44,7 @@ export const ENDPOINTS = {
     ADMIN_TRANSFER: "/admin/transferFund", // For admin transfers to users
   },
   ADMIN: {
+    USERS: "/admin/users",
     GENERATE_COUPON: "/admin/generatecoupon",
     REFUND: (transactionId: string) => `/admin/refund/${transactionId}`,
   },

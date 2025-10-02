@@ -1,7 +1,6 @@
 "use client";
 
-import { useDeleteUser, useUpdateUser, useUsers } from "@/services/hooks";
-import { User } from "@/services/types/api-endpoints";
+import { useUsers } from "@/services/hooks";
 import {
   ColumnDef,
   flexRender,
@@ -11,46 +10,35 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Edit, Plus, Search, Trash2 } from "lucide-react";
+import { Edit, Search, Users } from "lucide-react";
 import { useState } from "react";
-import AddUserModal from "./add-user-modal";
 
-export default function SystemUsers() {
+export default function UsersManagement() {
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
   const [limit] = useState(30);
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // API hooks
+  // API hook
   const { data: usersData, isLoading: usersLoading } = useUsers({
     page,
     limit,
     search: searchTerm || undefined,
   });
 
-  const updateUserMutation = useUpdateUser();
-  const deleteUserMutation = useDeleteUser();
-
   const users = usersData?.users || [];
   const totalPages = usersData?.totalPages || 1;
   const totalUsers = usersData?.totalUsers || 0;
+  const totalBalance = usersData?.totalBalance || 0;
 
   // Define table columns
-  const columns: ColumnDef<User, any>[] = [
-    {
-      accessorKey: "fullName",
-      header: "Full Name",
-      cell: ({ getValue }) => (
-        <div className="text-sm font-medium text-gray-900">
-          {getValue() as string}
-        </div>
-      ),
-    },
+  const columns: ColumnDef<any>[] = [
     {
       accessorKey: "userName",
       header: "Username",
       cell: ({ getValue }) => (
-        <div className="text-sm text-gray-500">{getValue() as string}</div>
+        <div className="text-sm font-medium text-gray-900">
+          {getValue() as string}
+        </div>
       ),
     },
     {
@@ -69,7 +57,7 @@ export default function SystemUsers() {
     },
     {
       accessorKey: "userType",
-      header: "Role",
+      header: "User Type",
       cell: ({ getValue }) => (
         <div className="text-sm text-gray-500 capitalize">
           {getValue() as string}
@@ -103,12 +91,6 @@ export default function SystemUsers() {
           >
             <Edit className="w-5 h-5" />
           </button>
-          <button
-            className="text-red-600 hover:text-red-800"
-            onClick={() => handleDeleteUser(row.original)}
-          >
-            <Trash2 className="w-5 h-5" />
-          </button>
         </div>
       ),
     },
@@ -124,33 +106,9 @@ export default function SystemUsers() {
     getSortedRowModel: getSortedRowModel(),
   });
 
-  const handleEditUser = (user: User) => {
+  const handleEditUser = (user: any) => {
     // TODO: Implement edit user functionality
     console.log("Edit user:", user);
-  };
-
-  const handleDeleteUser = async (user: User) => {
-    if (
-      window.confirm(`Are you sure you want to delete user ${user.userName}?`)
-    ) {
-      try {
-        await deleteUserMutation.mutateAsync(user._id);
-        // The query will automatically refetch due to invalidation
-      } catch (error) {
-        console.error("Failed to delete user:", error);
-        alert("Failed to delete user. Please try again.");
-      }
-    }
-  };
-
-  const handleAddUser = (user: {
-    fullName: string;
-    username: string;
-    password: string;
-    role: string;
-  }) => {
-    // TODO: Implement add user functionality with API
-    console.log("Add user:", user);
   };
 
   const handleSearch = (value: string) => {
@@ -162,16 +120,23 @@ export default function SystemUsers() {
     <div className="p-4 md:p-6 max-w-7xl mx-auto">
       {/* Page title */}
       <div className="flex items-center gap-3 mb-6">
+        <Users className="w-6 h-6 text-gray-600" />
         <h1 className="text-xl md:text-2xl font-bold text-gray-900">
-          System Users Management
+          Users Management
         </h1>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-white rounded-lg border border-gray-200 p-4">
           <div className="text-sm font-medium text-gray-500">Total Users</div>
           <div className="text-2xl font-bold text-gray-900">{totalUsers}</div>
+        </div>
+        <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <div className="text-sm font-medium text-gray-500">Total Balance</div>
+          <div className="text-2xl font-bold text-gray-900">
+            ₦{totalBalance.toLocaleString()}
+          </div>
         </div>
         <div className="bg-white rounded-lg border border-gray-200 p-4">
           <div className="text-sm font-medium text-gray-500">Current Page</div>
@@ -181,51 +146,24 @@ export default function SystemUsers() {
         </div>
       </div>
 
-      {/* Search and filters */}
-      <div className="flex flex-col md:flex-row gap-3 mb-6">
-        <div className="relative flex-1">
+      {/* Search */}
+      <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6">
+        <div className="flex items-center gap-4">
+          <Search className="w-5 h-5 text-gray-500" />
           <input
             type="text"
-            placeholder="Search users by name, username, email, or phone..."
+            placeholder="Search users by username, email, or phone..."
             value={searchTerm}
             onChange={(e) => handleSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search className="h-5 w-5 text-gray-400" />
-          </div>
         </div>
-        <button className="px-4 py-2 border border-gray-300 rounded-md bg-white text-sm flex items-center justify-center">
-          <span className="mr-2">Filters</span>
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 16 16"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M4 8H12M2 4H14M6 12H10"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
-        <button
-          className="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm font-medium flex items-center justify-center hover:bg-indigo-700 transition-colors"
-          onClick={() => setIsModalOpen(true)}
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Add New User
-        </button>
       </div>
 
       {/* Users table */}
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden mb-6">
         <div className="p-4 border-b border-gray-200">
-          <h3 className="font-medium">All System Users</h3>
+          <h3 className="font-medium">All Users</h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[800px]">
@@ -261,9 +199,6 @@ export default function SystemUsers() {
                 // Loading skeleton
                 Array.from({ length: 10 }).map((_, index) => (
                   <tr key={index} className="animate-pulse">
-                    <td className="px-4 md:px-6 py-4">
-                      <div className="h-4 bg-gray-200 rounded w-32"></div>
-                    </td>
                     <td className="px-4 md:px-6 py-4">
                       <div className="h-4 bg-gray-200 rounded w-24"></div>
                     </td>
@@ -335,13 +270,6 @@ export default function SystemUsers() {
           </div>
         </div>
       </div>
-
-      {/* Add User Modal */}
-      <AddUserModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onAddUser={handleAddUser}
-      />
     </div>
   );
 }

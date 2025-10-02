@@ -11,6 +11,7 @@ import {
   DeleteDataPlanResponse,
   GetDataPlanPricesResponse,
   GetDiscosResponse,
+  GetUsersResponse,
   PaginationParams,
   UpdateDataPlanRequest,
   UpdateDataPlanResponse,
@@ -131,6 +132,38 @@ export const dataPlansApi = {
       return response.data;
     } catch (error) {
       throw new Error(`Failed to delete data plan: ${error}`);
+    }
+  },
+};
+
+// Users API - for admin user management
+export const usersApi = {
+  // Get all users with pagination
+  getAll: async (params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+  }): Promise<GetUsersResponse> => {
+    if (shouldUseMockData()) {
+      await mockDelay();
+      return {
+        users: [],
+        totalPages: 1,
+        totalUsers: 0,
+        totalBalance: 0,
+        page: 1,
+        limit: 30,
+      };
+    }
+
+    try {
+      const response = await apiClient.get<GetUsersResponse>(
+        ENDPOINTS.ADMIN.USERS,
+        { params }
+      );
+      return response.data;
+    } catch (error) {
+      throw new Error(`Failed to fetch users: ${error}`);
     }
   },
 };

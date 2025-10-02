@@ -165,10 +165,12 @@ export interface ChangePasswordResponse {
 }
 
 export interface GetUsersResponse {
-  status: number;
-  status_code: string;
-  data: User[];
-  msg: string;
+  users: User[];
+  totalPages: number;
+  totalUsers: number;
+  totalBalance: number;
+  page: number;
+  limit: number;
 }
 
 // ============================================================================
