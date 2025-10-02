@@ -25,6 +25,7 @@ import {
   BuyElectricityResponse,
   ChangePasswordRequest,
   ChangePasswordResponse,
+  DataPlanPrice,
   DeleteContactResponse,
   DeleteDataPlanResponse,
   DeleteUserResponse,
@@ -34,7 +35,6 @@ import {
   GetContactsResponse,
   // Data plan types
   GetDataPlanPricesResponse,
-  GetDataPlansResponse,
   GetDiscosResponse,
   // Price types
   GetPricesRequest,
@@ -467,9 +467,7 @@ export const useDataPlanPrices = (
 };
 
 // Get All Data Plans Query
-export const useDataPlans = (
-  options?: UseQueryOptions<GetDataPlansResponse>
-) => {
+export const useDataPlans = (options?: UseQueryOptions<DataPlanPrice[]>) => {
   return useQuery({
     queryKey: queryKeys.dataPlans.all,
     queryFn: () => ApiService.getDataPlans(),

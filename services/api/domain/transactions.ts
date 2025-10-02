@@ -118,30 +118,6 @@ export const transactionsApi = {
     userName: string,
     params?: PaginationParams
   ): Promise<SearchTransactionsResponse> => {
-    if (shouldUseMockData()) {
-      await mockDelay();
-      return {
-        status: 200,
-        status_code: "OK",
-        data: {
-          stat: [
-            {
-              network: "MTN SME",
-              profit: 0,
-              total_volume_sold: 0,
-            },
-          ],
-          totalPages: 0,
-          totalSales: 0,
-          totalProfit: 0,
-          transactions: [],
-        },
-        page: params?.page || 1,
-        limit: params?.limit || 100,
-        msg: "Mock user transactions",
-      };
-    }
-
     try {
       const response = await apiClient.get<SearchTransactionsResponse>(
         ENDPOINTS.TRANSACTIONS.SEARCH,

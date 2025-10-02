@@ -7,9 +7,9 @@ import {
   BuyDataResponse,
   BuyElectricityRequest,
   BuyElectricityResponse,
+  DataPlanPrice,
   DeleteDataPlanResponse,
   GetDataPlanPricesResponse,
-  GetDataPlansResponse,
   GetDiscosResponse,
   PaginationParams,
   UpdateDataPlanRequest,
@@ -26,19 +26,14 @@ export const dataPlansApi = {
   // Get all data plans
   getAll: async (
     params?: PaginationParams & { plan_type?: string }
-  ): Promise<GetDataPlansResponse> => {
+  ): Promise<DataPlanPrice[]> => {
     if (shouldUseMockData()) {
       await mockDelay();
-      return {
-        status: 200,
-        status_code: "OK",
-        data: [],
-        msg: "Mock data plans",
-      };
+      return [];
     }
 
     try {
-      const response = await apiClient.get<GetDataPlansResponse>(
+      const response = await apiClient.get<DataPlanPrice[]>(
         ENDPOINTS.PLANS.GET_ALL(),
         { params }
       );

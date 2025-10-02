@@ -348,16 +348,18 @@ export interface DataPlanPrice {
   _id: string;
   id: number;
   dataplan_id: string;
+  network?: number;
   plan_network: string;
   plan_type: string;
   month_validate: string;
   plan: string;
+  plan_amount?: string;
   my_price: string;
   resellerPrice: string;
   apiPrice: string;
   planCostPrice: number;
   __v: number;
-  volumeRatio: number;
+  volumeRatio?: number;
 }
 
 export interface GetDataPlanPricesResponse {

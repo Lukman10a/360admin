@@ -25,7 +25,7 @@ export default function DataPlans() {
   const updateDataPlanMutation = useUpdateDataPlan();
   const deleteDataPlanMutation = useDeleteDataPlan();
 
-  const dataPlans = dataPlansData?.data || [];
+  const dataPlans = dataPlansData || [];
 
   const handleAddPlan = (plan: {
     network: string;

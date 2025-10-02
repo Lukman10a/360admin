@@ -15,6 +15,7 @@ import {
   BuyElectricityResponse,
   ChangePasswordRequest,
   ChangePasswordResponse,
+  DataPlanPrice,
   DeleteContactResponse,
   DeleteDataPlanResponse,
   DeleteUserResponse,
@@ -24,7 +25,6 @@ import {
   GetContactsResponse,
   // Data plan types
   GetDataPlanPricesResponse,
-  GetDataPlansResponse,
   GetDiscosResponse,
   // Price types
   GetPricesRequest,
@@ -259,7 +259,7 @@ export class ApiService {
   /**
    * Get all data plans
    */
-  static async getDataPlans(): Promise<GetDataPlansResponse> {
+  static async getDataPlans(): Promise<DataPlanPrice[]> {
     return dataPlansApi.getAll();
   }
 
