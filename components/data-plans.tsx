@@ -6,6 +6,15 @@ import {
   useDeleteDataPlan,
   useUpdateDataPlan,
 } from "@/services/hooks";
+import {
+  ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
 import { Edit, Filter, Plus, Trash } from "lucide-react";
 import { useState } from "react";
 import AddDataPlanModal from "./add-data-plan-modal";
@@ -33,6 +42,94 @@ export default function DataPlans() {
   const deleteDataPlanMutation = useDeleteDataPlan();
 
   const dataPlans = dataPlansData || [];
+
+  // Define table columns
+  const columns: ColumnDef<any>[] = [
+    {
+      accessorKey: "plan",
+      header: "Plan",
+      cell: ({ row }) => (
+        <div className="text-sm font-medium text-gray-900">
+          {row.original.plan} ({row.original.plan_network}{" "}
+          {row.original.plan_type})
+        </div>
+      ),
+    },
+    {
+      accessorKey: "dataplan_id",
+      header: "Plan ID",
+      cell: ({ getValue }) => (
+        <div className="text-sm text-gray-500">{getValue() as string}</div>
+      ),
+    },
+    {
+      accessorKey: "my_price",
+      header: "Price",
+      cell: ({ getValue }) => (
+        <div className="text-sm text-gray-500">₦{getValue() as string}</div>
+      ),
+    },
+    {
+      accessorKey: "resellerPrice",
+      header: "User",
+      cell: ({ getValue }) => (
+        <div className="text-sm text-gray-500">₦{getValue() as string}</div>
+      ),
+    },
+    {
+      accessorKey: "apiPrice",
+      header: "Agent",
+      cell: ({ getValue }) => (
+        <div className="text-sm text-gray-500">₦{getValue() as string}</div>
+      ),
+    },
+    {
+      accessorKey: "apiPrice",
+      header: "Vendor",
+      cell: ({ getValue }) => (
+        <div className="text-sm text-gray-500">₦{getValue() as string}</div>
+      ),
+    },
+    {
+      accessorKey: "month_validate",
+      header: "Expiry",
+      cell: ({ getValue }) => (
+        <div className="text-sm text-gray-500">{getValue() as string}</div>
+      ),
+    },
+    {
+      id: "actions",
+      header: "Actions",
+      cell: ({ row }) => (
+        <div className="flex space-x-2">
+          <button
+            className="text-indigo-600 hover:text-indigo-800"
+            onClick={() => handleEditPlan(row.original)}
+            disabled={updateDataPlanMutation.isPending}
+          >
+            <Edit className="w-5 h-5" />
+          </button>
+          <button
+            className="text-red-600 hover:text-red-800"
+            onClick={() => handleDeletePlan(row.original._id)}
+            disabled={deleteDataPlanMutation.isPending}
+          >
+            <Trash className="w-5 h-5" />
+          </button>
+        </div>
+      ),
+    },
+  ];
+
+  // Initialize table
+  const table = useReactTable({
+    data: dataPlans,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+  });
 
   const handleAddPlan = (plan: {
     network: string;
@@ -214,16 +311,31 @@ export default function DataPlans() {
         <div className="overflow-x-auto">
           <table className="w-full min-w-[800px]">
             <thead>
-              <tr className="bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                <th className="px-4 md:px-6 py-3">Plan</th>
-                <th className="px-4 md:px-6 py-3">Plan ID</th>
-                <th className="px-4 md:px-6 py-3">Price</th>
-                <th className="px-4 md:px-6 py-3">User</th>
-                <th className="px-4 md:px-6 py-3">Agent</th>
-                <th className="px-4 md:px-6 py-3">Vendor</th>
-                <th className="px-4 md:px-6 py-3">Action</th>
-                <th className="px-4 md:px-6 py-3">Action</th>
-              </tr>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <tr
+                  key={headerGroup.id}
+                  className="bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  {headerGroup.headers.map((header) => (
+                    <th
+                      key={header.id}
+                      className="px-4 md:px-6 py-3 cursor-pointer select-none"
+                      onClick={header.column.getToggleSortingHandler()}
+                    >
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                      {{
+                        asc: " 🔼",
+                        desc: " 🔽",
+                      }[header.column.getIsSorted() as string] ?? null}
+                    </th>
+                  ))}
+                </tr>
+              ))}
             </thead>
             <tbody className="divide-y divide-gray-200">
               {dataPlansLoading ? (
@@ -249,58 +361,30 @@ export default function DataPlans() {
                       <div className="h-4 bg-gray-200 rounded w-20"></div>
                     </td>
                     <td className="px-4 md:px-6 py-4">
-                      <div className="h-4 bg-gray-200 rounded w-8"></div>
+                      <div className="h-4 bg-gray-200 rounded w-20"></div>
                     </td>
                     <td className="px-4 md:px-6 py-4">
                       <div className="h-4 bg-gray-200 rounded w-8"></div>
                     </td>
                   </tr>
                 ))
-              ) : dataPlans.length > 0 ? (
-                dataPlans.map((plan) => (
-                  <tr key={plan._id} className="hover:bg-gray-50">
-                    <td className="px-4 md:px-6 py-4 text-sm font-medium text-gray-900">
-                      {plan.plan} ({plan.plan_network} {plan.plan_type})
-                    </td>
-                    <td className="px-4 md:px-6 py-4 text-sm text-gray-500">
-                      {plan.dataplan_id}
-                    </td>
-                    <td className="px-4 md:px-6 py-4 text-sm text-gray-500">
-                      ₦{plan.my_price}
-                    </td>
-                    <td className="px-4 md:px-6 py-4 text-sm text-gray-500">
-                      ₦{plan.resellerPrice}
-                    </td>
-                    <td className="px-4 md:px-6 py-4 text-sm text-gray-500">
-                      ₦{plan.apiPrice}
-                    </td>
-                    <td className="px-4 md:px-6 py-4 text-sm text-gray-500">
-                      ₦{plan.apiPrice}
-                    </td>
-                    <td className="px-4 md:px-6 py-4">
-                      <button
-                        className="text-indigo-600 hover:text-indigo-800"
-                        onClick={() => handleEditPlan(plan)}
-                        disabled={updateDataPlanMutation.isPending}
-                      >
-                        <Edit className="w-5 h-5" />
-                      </button>
-                    </td>
-                    <td className="px-4 md:px-6 py-4">
-                      <button
-                        className="text-red-600 hover:text-red-800"
-                        onClick={() => handleDeletePlan(plan._id)}
-                        disabled={deleteDataPlanMutation.isPending}
-                      >
-                        <Trash className="w-5 h-5" />
-                      </button>
-                    </td>
+              ) : table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <tr key={row.id} className="hover:bg-gray-50">
+                    {row.getVisibleCells().map((cell) => (
+                      <td key={cell.id} className="px-4 md:px-6 py-4">
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </td>
+                    ))}
                   </tr>
                 ))
               ) : (
                 <tr>
                   <td
-                    colSpan={8}
+                    colSpan={columns.length}
                     className="px-4 md:px-6 py-8 text-center text-gray-500"
                   >
                     No data plans found.
@@ -311,15 +395,23 @@ export default function DataPlans() {
           </table>
         </div>
         <div className="px-4 md:px-6 py-4 flex flex-col sm:flex-row items-center justify-between border-t border-gray-200 gap-3">
-          <div className="text-sm text-gray-700">Page 1 of 1</div>
+          <div className="text-sm text-gray-700">
+            Page {table.getState().pagination.pageIndex + 1} of{" "}
+            {table.getPageCount()}
+          </div>
           <div className="flex space-x-2">
             <button
-              className="px-4 py-2 border border-gray-300 rounded-md bg-white text-sm"
-              disabled
+              className="px-4 py-2 border border-gray-300 rounded-md bg-white text-sm disabled:opacity-50"
+              onClick={() => table.previousPage()}
+              disabled={!table.getCanPreviousPage()}
             >
               Previous
             </button>
-            <button className="px-4 py-2 border border-gray-300 rounded-md bg-white text-sm">
+            <button
+              className="px-4 py-2 border border-gray-300 rounded-md bg-white text-sm disabled:opacity-50"
+              onClick={() => table.nextPage()}
+              disabled={!table.getCanNextPage()}
+            >
               Next
             </button>
           </div>

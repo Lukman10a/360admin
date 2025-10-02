@@ -1,9 +1,8 @@
 "use client";
 
-import type React from "react";
-
 import { Check } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useForm } from "react-hook-form";
 
 interface AddDataPlanModalProps {
   isOpen: boolean;
@@ -34,6 +33,18 @@ interface AddDataPlanModalProps {
   isUpdate?: boolean;
 }
 
+type FormData = {
+  network: string;
+  name: string;
+  dataType: string;
+  planId: string;
+  duration: string;
+  buyingPrice: string;
+  userPrice: string;
+  agentPrice: string;
+  vendorPrice: string;
+};
+
 export default function AddDataPlanModal({
   isOpen,
   onClose,
@@ -42,15 +53,15 @@ export default function AddDataPlanModal({
   selectedPlan,
   isUpdate = false,
 }: AddDataPlanModalProps) {
-  const [network, setNetwork] = useState("");
-  const [name, setName] = useState("");
-  const [dataType, setDataType] = useState("");
-  const [planId, setPlanId] = useState("");
-  const [duration, setDuration] = useState("");
-  const [buyingPrice, setBuyingPrice] = useState("");
-  const [userPrice, setUserPrice] = useState("");
-  const [agentPrice, setAgentPrice] = useState("");
-  const [vendorPrice, setVendorPrice] = useState("");
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    reset,
+    formState: { errors },
+  } = useForm<FormData>();
+
   const [isNetworkDropdownOpen, setIsNetworkDropdownOpen] = useState(false);
   const [isDataTypeDropdownOpen, setIsDataTypeDropdownOpen] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
@@ -58,30 +69,25 @@ export default function AddDataPlanModal({
   const networks = ["MTN", "Glo", "Airtel", "9mobile"];
   const dataTypes = ["Gifting", "SME", "Corporate", "Direct"];
 
+  const watchedNetwork = watch("network");
+  const watchedDataType = watch("dataType");
+
   useEffect(() => {
     if (isUpdate && selectedPlan) {
-      setNetwork(selectedPlan.plan_network || "");
-      setName(selectedPlan.plan || "");
-      setDataType(selectedPlan.plan_type || "");
-      setPlanId(selectedPlan.dataplan_id || "");
-      setDuration(selectedPlan.month_validate?.split(" ")[0] || "");
-      setBuyingPrice(selectedPlan.planCostPrice?.toString() || "");
-      setUserPrice(selectedPlan.resellerPrice || "");
-      setAgentPrice(selectedPlan.apiPrice || "");
-      setVendorPrice(selectedPlan.apiPrice || "");
+      setValue("network", selectedPlan.plan_network || "");
+      setValue("name", selectedPlan.plan || "");
+      setValue("dataType", selectedPlan.plan_type || "");
+      setValue("planId", selectedPlan.dataplan_id || "");
+      setValue("duration", selectedPlan.month_validate?.split(" ")[0] || "");
+      setValue("buyingPrice", selectedPlan.planCostPrice?.toString() || "");
+      setValue("userPrice", selectedPlan.resellerPrice || "");
+      setValue("agentPrice", selectedPlan.apiPrice || "");
+      setValue("vendorPrice", selectedPlan.apiPrice || "");
     } else if (!isUpdate) {
       // Reset form for add
-      setNetwork("");
-      setName("");
-      setDataType("");
-      setPlanId("");
-      setDuration("");
-      setBuyingPrice("");
-      setUserPrice("");
-      setAgentPrice("");
-      setVendorPrice("");
+      reset();
     }
-  }, [isUpdate, selectedPlan]);
+  }, [isUpdate, selectedPlan, setValue, reset]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -102,37 +108,16 @@ export default function AddDataPlanModal({
     };
   }, [isOpen, onClose]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const planData = {
-      network,
-      name,
-      dataType,
-      planId,
-      duration,
-      buyingPrice,
-      userPrice,
-      agentPrice,
-      vendorPrice,
-    };
-
+  const onSubmit = (data: FormData) => {
     if (isUpdate && onUpdatePlan) {
-      onUpdatePlan(planData);
+      onUpdatePlan(data);
     } else {
-      onAddPlan(planData);
+      onAddPlan(data);
     }
 
     // Reset form only for add
     if (!isUpdate) {
-      setNetwork("");
-      setName("");
-      setDataType("");
-      setPlanId("");
-      setDuration("");
-      setBuyingPrice("");
-      setUserPrice("");
-      setAgentPrice("");
-      setVendorPrice("");
+      reset();
     }
   };
 
@@ -144,7 +129,7 @@ export default function AddDataPlanModal({
         ref={modalRef}
         className="bg-white rounded-lg w-full max-w-md p-6 shadow-lg"
       >
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <div className="mb-4">
             <label
               htmlFor="network"
@@ -158,7 +143,7 @@ export default function AddDataPlanModal({
                 className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-left flex justify-between items-center focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 onClick={() => setIsNetworkDropdownOpen(!isNetworkDropdownOpen)}
               >
-                {network || "Select Network"}
+                {watchedNetwork || "Select Network"}
                 <svg
                   className={`w-5 h-5 transition-transform ${
                     isNetworkDropdownOpen ? "transform rotate-180" : ""
@@ -187,11 +172,13 @@ export default function AddDataPlanModal({
                         type="button"
                         className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 flex items-center"
                         onClick={() => {
-                          setNetwork(net);
+                          setValue("network", net);
                           setIsNetworkDropdownOpen(false);
                         }}
                       >
-                        {network === net && <Check className="w-4 h-4 mr-2" />}
+                        {watchedNetwork === net && (
+                          <Check className="w-4 h-4 mr-2" />
+                        )}
                         <span>{net}</span>
                       </button>
                     ))}
@@ -212,11 +199,12 @@ export default function AddDataPlanModal({
               <input
                 type="text"
                 id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                {...register("name", { required: true })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                required
               />
+              {errors.name && (
+                <p className="mt-1 text-sm text-red-600">Name is required</p>
+              )}
             </div>
             <div>
               <label
@@ -233,7 +221,7 @@ export default function AddDataPlanModal({
                     setIsDataTypeDropdownOpen(!isDataTypeDropdownOpen)
                   }
                 >
-                  {dataType || "Select Type"}
+                  {watchedDataType || "Select Type"}
                   <svg
                     className={`w-5 h-5 transition-transform ${
                       isDataTypeDropdownOpen ? "transform rotate-180" : ""
@@ -259,7 +247,7 @@ export default function AddDataPlanModal({
                           type="button"
                           className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100"
                           onClick={() => {
-                            setDataType(type);
+                            setValue("dataType", type);
                             setIsDataTypeDropdownOpen(false);
                           }}
                         >
@@ -284,11 +272,12 @@ export default function AddDataPlanModal({
               <input
                 type="text"
                 id="planId"
-                value={planId}
-                onChange={(e) => setPlanId(e.target.value)}
+                {...register("planId", { required: true })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                required
               />
+              {errors.planId && (
+                <p className="mt-1 text-sm text-red-600">Plan ID is required</p>
+              )}
             </div>
             <div>
               <label
@@ -300,12 +289,15 @@ export default function AddDataPlanModal({
               <input
                 type="number"
                 id="duration"
-                value={duration}
-                onChange={(e) => setDuration(e.target.value)}
+                {...register("duration", { required: true })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 placeholder="Days"
-                required
               />
+              {errors.duration && (
+                <p className="mt-1 text-sm text-red-600">
+                  Duration is required
+                </p>
+              )}
             </div>
           </div>
 
@@ -319,12 +311,15 @@ export default function AddDataPlanModal({
             <input
               type="number"
               id="buyingPrice"
-              value={buyingPrice}
-              onChange={(e) => setBuyingPrice(e.target.value)}
+              {...register("buyingPrice", { required: true })}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               placeholder="Price"
-              required
             />
+            {errors.buyingPrice && (
+              <p className="mt-1 text-sm text-red-600">
+                Buying Price is required
+              </p>
+            )}
           </div>
 
           <div className="grid grid-cols-3 gap-4 mb-6">
@@ -338,12 +333,15 @@ export default function AddDataPlanModal({
               <input
                 type="number"
                 id="userPrice"
-                value={userPrice}
-                onChange={(e) => setUserPrice(e.target.value)}
+                {...register("userPrice", { required: true })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 placeholder="User Price"
-                required
               />
+              {errors.userPrice && (
+                <p className="mt-1 text-sm text-red-600">
+                  User Price is required
+                </p>
+              )}
             </div>
             <div>
               <label
@@ -355,12 +353,15 @@ export default function AddDataPlanModal({
               <input
                 type="number"
                 id="agentPrice"
-                value={agentPrice}
-                onChange={(e) => setAgentPrice(e.target.value)}
+                {...register("agentPrice", { required: true })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 placeholder="Agent Price"
-                required
               />
+              {errors.agentPrice && (
+                <p className="mt-1 text-sm text-red-600">
+                  Agent Price is required
+                </p>
+              )}
             </div>
             <div>
               <label
@@ -372,12 +373,15 @@ export default function AddDataPlanModal({
               <input
                 type="number"
                 id="vendorPrice"
-                value={vendorPrice}
-                onChange={(e) => setVendorPrice(e.target.value)}
+                {...register("vendorPrice", { required: true })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 placeholder="Vendor Price"
-                required
               />
+              {errors.vendorPrice && (
+                <p className="mt-1 text-sm text-red-600">
+                  Vendor Price is required
+                </p>
+              )}
             </div>
           </div>
 
