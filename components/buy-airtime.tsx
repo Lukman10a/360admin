@@ -1,22 +1,69 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useBuyAirtime } from "@/services/hooks";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Smartphone } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
 import SuccessMessage from "./success-message";
 
+const airtimeFormSchema = z.object({
+  network: z.string().min(1, "Please select a network"),
+  mobile_number: z
+    .string()
+    .min(1, "Phone number is required")
+    .regex(
+      /^(\+?234|0)[789]\d{9}$/,
+      "Please enter a valid Nigerian phone number"
+    ),
+  amount: z
+    .string()
+    .min(1, "Amount is required")
+    .refine((val) => {
+      const num = parseFloat(val);
+      return !isNaN(num) && num >= 1;
+    }, "Amount must be at least ₦1"),
+});
+
+type AirtimeFormData = z.infer<typeof airtimeFormSchema>;
+
 export default function BuyAirtime() {
-  const [formData, setFormData] = useState({
-    mobile_number: "",
-    network: "",
-    amount: "",
-  });
   const [showSuccess, setShowSuccess] = useState(false);
   const [successDetails, setSuccessDetails] = useState({
     title: "",
     message: "",
   });
   const [savedNumbers, setSavedNumbers] = useState<string[]>([]);
+
+  const form = useForm<AirtimeFormData>({
+    resolver: zodResolver(airtimeFormSchema),
+    defaultValues: {
+      network: "",
+      mobile_number: "",
+      amount: "",
+    },
+  });
+
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = form;
+  const mobileNumber = watch("mobile_number");
 
   // Load saved numbers from localStorage on component mount
   useEffect(() => {
@@ -35,14 +82,9 @@ export default function BuyAirtime() {
     { id: "4", name: "9MOBILE" },
   ];
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setValue(name as keyof AirtimeFormData, value);
 
     // Auto-detect network based on phone number
     if (name === "mobile_number" && value.length >= 4) {
@@ -83,59 +125,34 @@ export default function BuyAirtime() {
         909: "4", // 9MOBILE
       };
       const detectedNetwork = networkMap[prefix];
-      if (detectedNetwork && !formData.network) {
-        setFormData((prev) => ({
-          ...prev,
-          network: detectedNetwork,
-        }));
+      if (detectedNetwork) {
+        setValue("network", detectedNetwork);
       }
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!formData.mobile_number || !formData.network || !formData.amount) {
-      alert("Please fill in all fields");
-      return;
-    }
-
-    // Basic phone number validation
-    const phoneRegex = /^(\+?234|0)[789]\d{9}$/;
-    if (!phoneRegex.test(formData.mobile_number)) {
-      alert("Please enter a valid Nigerian phone number");
-      return;
-    }
-
-    const amount = parseFloat(formData.amount);
-    if (amount < 1) {
-      alert("Amount must be at least ₦1");
-      return;
-    }
-
+  const onSubmit = async (data: AirtimeFormData) => {
     const request = {
-      mobile_number: formData.mobile_number,
-      network: parseInt(formData.network),
-      amount: amount,
+      mobile_number: data.mobile_number,
+      network: parseInt(data.network),
+      amount: parseFloat(data.amount),
     };
 
     try {
       await buyAirtimeMutation.mutateAsync(request);
       setSuccessDetails({
         title: "Airtime Purchase Successful",
-        message: `You have successfully purchased ₦${amount.toLocaleString()} airtime for ${
-          formData.mobile_number
-        }.`,
+        message: `You have successfully purchased ₦${parseFloat(
+          data.amount
+        ).toLocaleString()} airtime for ${data.mobile_number}.`,
       });
       setShowSuccess(true);
       // Reset form
-      setFormData({
-        mobile_number: "",
-        network: "",
-        amount: "",
-      });
+      form.reset();
     } catch (error) {
-      alert(`Failed to purchase airtime: ${error}`);
+      form.setError("root", {
+        message: `Failed to purchase airtime: ${error}`,
+      });
     }
   };
 
@@ -148,7 +165,7 @@ export default function BuyAirtime() {
   };
 
   const selectSavedNumber = (number: string) => {
-    setFormData((prev) => ({ ...prev, mobile_number: number }));
+    setValue("mobile_number", number);
   };
 
   return (
@@ -159,148 +176,137 @@ export default function BuyAirtime() {
       </h1>
 
       {/* Buy Airtime Form */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6 max-w-md">
-        <div className="flex items-center mb-6">
-          <Smartphone className="w-8 h-8 text-indigo-600 mr-3" />
-          <h2 className="text-lg font-semibold text-gray-900">
+      <Card className="max-w-md">
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <Smartphone className="w-8 h-8 text-indigo-600 mr-3" />
             Purchase Airtime
-          </h2>
-        </div>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            {/* Network Selection */}
+            <div className="space-y-2">
+              <Label htmlFor="network">Network</Label>
+              <Select onValueChange={(value) => setValue("network", value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Network" />
+                </SelectTrigger>
+                <SelectContent>
+                  {networks.map((network) => (
+                    <SelectItem key={network.id} value={network.id}>
+                      {network.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.network && (
+                <p className="text-sm text-red-600">{errors.network.message}</p>
+              )}
+            </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Network Selection */}
-          <div>
-            <label
-              htmlFor="network"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Network
-            </label>
-            <select
-              id="network"
-              name="network"
-              value={formData.network}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-              required
-            >
-              <option value="">Select Network</option>
-              {networks.map((network) => (
-                <option key={network.id} value={network.id}>
-                  {network.name}
-                </option>
-              ))}
-            </select>
-          </div>
+            {/* Phone Number */}
+            <div className="space-y-2">
+              <Label htmlFor="mobile_number">Phone Number</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="mobile_number"
+                  {...register("mobile_number", {
+                    onChange: handleInputChange,
+                  })}
+                  type="tel"
+                  placeholder="Enter phone number"
+                  className="flex-1"
+                  required
+                />
+                <Button
+                  type="button"
+                  onClick={() => mobileNumber && savePhoneNumber(mobileNumber)}
+                  variant="outline"
+                  size="default"
+                  disabled={!mobileNumber}
+                >
+                  Save
+                </Button>
+              </div>
+              {/* Saved Numbers */}
+              {savedNumbers.length > 0 && (
+                <div className="mt-2">
+                  <p className="text-sm text-muted-foreground mb-1">
+                    Saved Numbers:
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {savedNumbers.map((number) => (
+                      <Button
+                        key={number}
+                        type="button"
+                        onClick={() => selectSavedNumber(number)}
+                        variant="outline"
+                        size="sm"
+                      >
+                        {number}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {errors.mobile_number && (
+                <p className="text-sm text-red-600">
+                  {errors.mobile_number.message}
+                </p>
+              )}
+            </div>
 
-          {/* Phone Number */}
-          <div>
-            <label
-              htmlFor="mobile_number"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Phone Number
-            </label>
-            <div className="flex gap-2">
-              <input
-                type="tel"
-                id="mobile_number"
-                name="mobile_number"
-                value={formData.mobile_number}
-                onChange={handleInputChange}
-                placeholder="Enter phone number"
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            {/* Amount */}
+            <div className="space-y-2">
+              <Label htmlFor="amount">Amount (₦)</Label>
+              <Input
+                id="amount"
+                {...register("amount")}
+                type="number"
+                placeholder="Enter amount"
+                min="1"
+                step="0.01"
                 required
               />
-              <button
-                type="button"
-                onClick={() =>
-                  formData.mobile_number &&
-                  savePhoneNumber(formData.mobile_number)
-                }
-                className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-md text-sm transition-colors"
-                disabled={!formData.mobile_number}
-              >
-                Save
-              </button>
-            </div>
-            {/* Saved Numbers */}
-            {savedNumbers.length > 0 && (
-              <div className="mt-2">
-                <p className="text-sm text-gray-600 mb-1">Saved Numbers:</p>
-                <div className="flex flex-wrap gap-2">
-                  {savedNumbers.map((number) => (
-                    <button
-                      key={number}
-                      type="button"
-                      onClick={() => selectSavedNumber(number)}
-                      className="px-2 py-1 text-xs bg-blue-100 hover:bg-blue-200 rounded transition-colors"
-                    >
-                      {number}
-                    </button>
-                  ))}
-                </div>
+              {/* Quick amount buttons */}
+              <div className="flex flex-wrap gap-2 mt-2">
+                {[100, 200, 500, 1000, 2000, 5000].map((amount) => (
+                  <Button
+                    key={amount}
+                    type="button"
+                    onClick={() => setValue("amount", amount.toString())}
+                    variant="outline"
+                    size="sm"
+                  >
+                    ₦{amount}
+                  </Button>
+                ))}
               </div>
-            )}
-          </div>
-
-          {/* Amount */}
-          <div>
-            <label
-              htmlFor="amount"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Amount (₦)
-            </label>
-            <input
-              type="number"
-              id="amount"
-              name="amount"
-              value={formData.amount}
-              onChange={handleInputChange}
-              placeholder="Enter amount"
-              min="1"
-              step="0.01"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-              required
-            />
-            {/* Quick amount buttons */}
-            <div className="flex flex-wrap gap-2 mt-2">
-              {[100, 200, 500, 1000, 2000, 5000].map((amount) => (
-                <button
-                  key={amount}
-                  type="button"
-                  onClick={() =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      amount: amount.toString(),
-                    }))
-                  }
-                  className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-                >
-                  ₦{amount}
-                </button>
-              ))}
+              {errors.amount && (
+                <p className="text-sm text-red-600">{errors.amount.message}</p>
+              )}
             </div>
-          </div>
 
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={buyAirtimeMutation.isPending}
-            className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-          >
-            {buyAirtimeMutation.isPending ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Processing...
-              </>
-            ) : (
-              "Purchase Airtime"
-            )}
-          </button>
-        </form>
-      </div>
+            {/* Submit Button */}
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full"
+              size="lg"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                "Purchase Airtime"
+              )}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
 
       {/* Success Message */}
       {showSuccess && (

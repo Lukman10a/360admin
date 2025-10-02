@@ -338,7 +338,7 @@ export interface Disco {
 }
 
 export interface GetDiscosResponse {
-  discos: Disco[];
+  data: Disco[];
 }
 
 // ============================================================================
