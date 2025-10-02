@@ -1,10 +1,10 @@
-import DashboardLayout from "@/components/dashboard-layout"
-import AirtimeDiscount from "@/components/airtime-discount"
+import BuyAirtime from "@/components/buy-airtime";
+import DashboardLayout from "@/components/dashboard-layout";
 
-export default function AirtimeDiscountPage() {
+export default function AirtimePage() {
   return (
     <DashboardLayout>
-      <AirtimeDiscount />
+      <BuyAirtime />
     </DashboardLayout>
-  )
+  );
 }
