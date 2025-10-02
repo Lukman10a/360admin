@@ -1,62 +1,110 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useRef, useEffect } from "react"
-import { Check } from "lucide-react"
+import { Check } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 interface AddDataPlanModalProps {
-  isOpen: boolean
-  onClose: () => void
+  isOpen: boolean;
+  onClose: () => void;
   onAddPlan: (plan: {
-    network: string
-    name: string
-    dataType: string
-    planId: string
-    duration: string
-    buyingPrice: string
-    userPrice: string
-    agentPrice: string
-    vendorPrice: string
-  }) => void
+    network: string;
+    name: string;
+    dataType: string;
+    planId: string;
+    duration: string;
+    buyingPrice: string;
+    userPrice: string;
+    agentPrice: string;
+    vendorPrice: string;
+  }) => void;
+  onUpdatePlan?: (plan: {
+    network: string;
+    name: string;
+    dataType: string;
+    planId: string;
+    duration: string;
+    buyingPrice: string;
+    userPrice: string;
+    agentPrice: string;
+    vendorPrice: string;
+  }) => void;
+  selectedPlan?: any;
+  isUpdate?: boolean;
 }
 
-export default function AddDataPlanModal({ isOpen, onClose, onAddPlan }: AddDataPlanModalProps) {
-  const [network, setNetwork] = useState("")
-  const [name, setName] = useState("")
-  const [dataType, setDataType] = useState("")
-  const [planId, setPlanId] = useState("")
-  const [duration, setDuration] = useState("")
-  const [buyingPrice, setBuyingPrice] = useState("")
-  const [userPrice, setUserPrice] = useState("")
-  const [agentPrice, setAgentPrice] = useState("")
-  const [vendorPrice, setVendorPrice] = useState("")
-  const [isNetworkDropdownOpen, setIsNetworkDropdownOpen] = useState(false)
-  const [isDataTypeDropdownOpen, setIsDataTypeDropdownOpen] = useState(false)
-  const modalRef = useRef<HTMLDivElement>(null)
+export default function AddDataPlanModal({
+  isOpen,
+  onClose,
+  onAddPlan,
+  onUpdatePlan,
+  selectedPlan,
+  isUpdate = false,
+}: AddDataPlanModalProps) {
+  const [network, setNetwork] = useState("");
+  const [name, setName] = useState("");
+  const [dataType, setDataType] = useState("");
+  const [planId, setPlanId] = useState("");
+  const [duration, setDuration] = useState("");
+  const [buyingPrice, setBuyingPrice] = useState("");
+  const [userPrice, setUserPrice] = useState("");
+  const [agentPrice, setAgentPrice] = useState("");
+  const [vendorPrice, setVendorPrice] = useState("");
+  const [isNetworkDropdownOpen, setIsNetworkDropdownOpen] = useState(false);
+  const [isDataTypeDropdownOpen, setIsDataTypeDropdownOpen] = useState(false);
+  const modalRef = useRef<HTMLDivElement>(null);
 
-  const networks = ["MTN", "Glo", "Airtel", "9mobile"]
-  const dataTypes = ["Gifting", "SME", "Corporate", "Direct"]
+  const networks = ["MTN", "Glo", "Airtel", "9mobile"];
+  const dataTypes = ["Gifting", "SME", "Corporate", "Direct"];
+
+  useEffect(() => {
+    if (isUpdate && selectedPlan) {
+      setNetwork(selectedPlan.plan_network || "");
+      setName(selectedPlan.plan || "");
+      setDataType(selectedPlan.plan_type || "");
+      setPlanId(selectedPlan.dataplan_id || "");
+      setDuration(selectedPlan.month_validate?.split(" ")[0] || "");
+      setBuyingPrice(selectedPlan.planCostPrice?.toString() || "");
+      setUserPrice(selectedPlan.resellerPrice || "");
+      setAgentPrice(selectedPlan.apiPrice || "");
+      setVendorPrice(selectedPlan.apiPrice || "");
+    } else if (!isUpdate) {
+      // Reset form for add
+      setNetwork("");
+      setName("");
+      setDataType("");
+      setPlanId("");
+      setDuration("");
+      setBuyingPrice("");
+      setUserPrice("");
+      setAgentPrice("");
+      setVendorPrice("");
+    }
+  }, [isUpdate, selectedPlan]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
-        onClose()
+      if (
+        modalRef.current &&
+        !modalRef.current.contains(event.target as Node)
+      ) {
+        onClose();
       }
-    }
+    };
 
     if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside)
+      document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside)
-    }
-  }, [isOpen, onClose])
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen, onClose]);
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    onAddPlan({
+    e.preventDefault();
+    const planData = {
       network,
       name,
       dataType,
@@ -66,27 +114,42 @@ export default function AddDataPlanModal({ isOpen, onClose, onAddPlan }: AddData
       userPrice,
       agentPrice,
       vendorPrice,
-    })
-    // Reset form
-    setNetwork("")
-    setName("")
-    setDataType("")
-    setPlanId("")
-    setDuration("")
-    setBuyingPrice("")
-    setUserPrice("")
-    setAgentPrice("")
-    setVendorPrice("")
-  }
+    };
 
-  if (!isOpen) return null
+    if (isUpdate && onUpdatePlan) {
+      onUpdatePlan(planData);
+    } else {
+      onAddPlan(planData);
+    }
+
+    // Reset form only for add
+    if (!isUpdate) {
+      setNetwork("");
+      setName("");
+      setDataType("");
+      setPlanId("");
+      setDuration("");
+      setBuyingPrice("");
+      setUserPrice("");
+      setAgentPrice("");
+      setVendorPrice("");
+    }
+  };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-700 bg-opacity-60 p-4">
-      <div ref={modalRef} className="bg-white rounded-lg w-full max-w-md p-6 shadow-lg">
+      <div
+        ref={modalRef}
+        className="bg-white rounded-lg w-full max-w-md p-6 shadow-lg"
+      >
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label htmlFor="network" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="network"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Network
             </label>
             <div className="relative">
@@ -97,7 +160,9 @@ export default function AddDataPlanModal({ isOpen, onClose, onAddPlan }: AddData
               >
                 {network || "Select Network"}
                 <svg
-                  className={`w-5 h-5 transition-transform ${isNetworkDropdownOpen ? "transform rotate-180" : ""}`}
+                  className={`w-5 h-5 transition-transform ${
+                    isNetworkDropdownOpen ? "transform rotate-180" : ""
+                  }`}
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 20 20"
                   fill="currentColor"
@@ -113,15 +178,17 @@ export default function AddDataPlanModal({ isOpen, onClose, onAddPlan }: AddData
               {isNetworkDropdownOpen && (
                 <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg">
                   <div className="py-1">
-                    <div className="px-3 py-2 text-sm text-gray-700">Select Network</div>
+                    <div className="px-3 py-2 text-sm text-gray-700">
+                      Select Network
+                    </div>
                     {networks.map((net) => (
                       <button
                         key={net}
                         type="button"
                         className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 flex items-center"
                         onClick={() => {
-                          setNetwork(net)
-                          setIsNetworkDropdownOpen(false)
+                          setNetwork(net);
+                          setIsNetworkDropdownOpen(false);
                         }}
                       >
                         {network === net && <Check className="w-4 h-4 mr-2" />}
@@ -136,7 +203,10 @@ export default function AddDataPlanModal({ isOpen, onClose, onAddPlan }: AddData
 
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="name"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Name
               </label>
               <input
@@ -149,18 +219,25 @@ export default function AddDataPlanModal({ isOpen, onClose, onAddPlan }: AddData
               />
             </div>
             <div>
-              <label htmlFor="dataType" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="dataType"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Data type
               </label>
               <div className="relative">
                 <button
                   type="button"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-left flex justify-between items-center focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  onClick={() => setIsDataTypeDropdownOpen(!isDataTypeDropdownOpen)}
+                  onClick={() =>
+                    setIsDataTypeDropdownOpen(!isDataTypeDropdownOpen)
+                  }
                 >
                   {dataType || "Select Type"}
                   <svg
-                    className={`w-5 h-5 transition-transform ${isDataTypeDropdownOpen ? "transform rotate-180" : ""}`}
+                    className={`w-5 h-5 transition-transform ${
+                      isDataTypeDropdownOpen ? "transform rotate-180" : ""
+                    }`}
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 20 20"
                     fill="currentColor"
@@ -182,8 +259,8 @@ export default function AddDataPlanModal({ isOpen, onClose, onAddPlan }: AddData
                           type="button"
                           className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100"
                           onClick={() => {
-                            setDataType(type)
-                            setIsDataTypeDropdownOpen(false)
+                            setDataType(type);
+                            setIsDataTypeDropdownOpen(false);
                           }}
                         >
                           {type}
@@ -198,7 +275,10 @@ export default function AddDataPlanModal({ isOpen, onClose, onAddPlan }: AddData
 
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div>
-              <label htmlFor="planId" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="planId"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Plan id
               </label>
               <input
@@ -211,7 +291,10 @@ export default function AddDataPlanModal({ isOpen, onClose, onAddPlan }: AddData
               />
             </div>
             <div>
-              <label htmlFor="duration" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="duration"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Duration in days
               </label>
               <input
@@ -227,7 +310,10 @@ export default function AddDataPlanModal({ isOpen, onClose, onAddPlan }: AddData
           </div>
 
           <div className="mb-4">
-            <label htmlFor="buyingPrice" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="buyingPrice"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Buying Price
             </label>
             <input
@@ -243,7 +329,10 @@ export default function AddDataPlanModal({ isOpen, onClose, onAddPlan }: AddData
 
           <div className="grid grid-cols-3 gap-4 mb-6">
             <div>
-              <label htmlFor="userPrice" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="userPrice"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 User Price
               </label>
               <input
@@ -257,7 +346,10 @@ export default function AddDataPlanModal({ isOpen, onClose, onAddPlan }: AddData
               />
             </div>
             <div>
-              <label htmlFor="agentPrice" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="agentPrice"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Agent Price
               </label>
               <input
@@ -271,7 +363,10 @@ export default function AddDataPlanModal({ isOpen, onClose, onAddPlan }: AddData
               />
             </div>
             <div>
-              <label htmlFor="vendorPrice" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="vendorPrice"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Vendor Price
               </label>
               <input
@@ -290,10 +385,10 @@ export default function AddDataPlanModal({ isOpen, onClose, onAddPlan }: AddData
             type="submit"
             className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
           >
-            Add Plan
+            {isUpdate ? "Update Plan" : "Add Plan"}
           </button>
         </form>
       </div>
     </div>
-  )
+  );
 }

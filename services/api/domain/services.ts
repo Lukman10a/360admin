@@ -25,7 +25,7 @@ import { mockDelay, shouldUseMockData } from "../infrastructure/mock-data";
 export const dataPlansApi = {
   // Get all data plans
   getAll: async (
-    params?: PaginationParams & { plan_type?: string }
+    params?: PaginationParams & { plan_type?: string; network?: string }
   ): Promise<DataPlanPrice[]> => {
     if (shouldUseMockData()) {
       await mockDelay();

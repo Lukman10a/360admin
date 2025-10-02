@@ -259,8 +259,11 @@ export class ApiService {
   /**
    * Get all data plans
    */
-  static async getDataPlans(): Promise<DataPlanPrice[]> {
-    return dataPlansApi.getAll();
+  static async getDataPlans(filters?: {
+    plan_type?: string;
+    network?: string;
+  }): Promise<DataPlanPrice[]> {
+    return dataPlansApi.getAll(filters);
   }
 
   /**

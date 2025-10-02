@@ -467,10 +467,13 @@ export const useDataPlanPrices = (
 };
 
 // Get All Data Plans Query
-export const useDataPlans = (options?: UseQueryOptions<DataPlanPrice[]>) => {
+export const useDataPlans = (
+  filters?: { plan_type?: string; network?: string },
+  options?: UseQueryOptions<DataPlanPrice[]>
+) => {
   return useQuery({
     queryKey: queryKeys.dataPlans.all,
-    queryFn: () => ApiService.getDataPlans(),
+    queryFn: () => ApiService.getDataPlans(filters),
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 15 * 60 * 1000, // 15 minutes
     ...options,

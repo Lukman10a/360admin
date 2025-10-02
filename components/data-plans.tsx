@@ -6,21 +6,28 @@ import {
   useDeleteDataPlan,
   useUpdateDataPlan,
 } from "@/services/hooks";
-import { Edit, Plus, Trash } from "lucide-react";
+import { Edit, Filter, Plus, Trash } from "lucide-react";
 import { useState } from "react";
 import AddDataPlanModal from "./add-data-plan-modal";
 import SuccessMessage from "./success-message";
 
 export default function DataPlans() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<any>(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [successDetails, setSuccessDetails] = useState({
     title: "",
     message: "",
   });
+  const [filters, setFilters] = useState({
+    network: "",
+    plan_type: "",
+  });
 
   // API hooks
-  const { data: dataPlansData, isLoading: dataPlansLoading } = useDataPlans();
+  const { data: dataPlansData, isLoading: dataPlansLoading } =
+    useDataPlans(filters);
   const addDataPlanMutation = useAddDataPlan();
   const updateDataPlanMutation = useUpdateDataPlan();
   const deleteDataPlanMutation = useDeleteDataPlan();
@@ -64,10 +71,72 @@ export default function DataPlans() {
     });
   };
 
+  const handleUpdatePlan = (plan: {
+    network: string;
+    name: string;
+    dataType: string;
+    planId: string;
+    duration: string;
+    buyingPrice: string;
+    userPrice: string;
+    agentPrice: string;
+    vendorPrice: string;
+  }) => {
+    if (!selectedPlan) return;
+
+    const updatedPlan = {
+      _id: selectedPlan._id,
+      planNetwork: plan.network,
+      planName: plan.name,
+      planType: plan.dataType,
+      planValidity: plan.duration,
+      planId: parseInt(plan.planId),
+      resellerPrice: parseFloat(plan.userPrice),
+      smartEarnerPrice: parseFloat(plan.agentPrice),
+      apiPrice: parseFloat(plan.vendorPrice),
+      planCostPrice: parseFloat(plan.buyingPrice),
+      partnerPrice: parseFloat(plan.vendorPrice),
+      planVolumeRatio: selectedPlan.volumeRatio || 1,
+    };
+
+    updateDataPlanMutation.mutate(updatedPlan, {
+      onSuccess: () => {
+        setIsUpdateModalOpen(false);
+        setSelectedPlan(null);
+        setSuccessDetails({
+          title: "Data Plan Updated Successfully",
+          message: `You have successfully updated the data plan.`,
+        });
+        setShowSuccess(true);
+      },
+    });
+  };
+
+  const handleEditPlan = (plan) => {
+    setSelectedPlan(plan);
+    setIsUpdateModalOpen(true);
+  };
+
   const handleDeletePlan = (planId: string) => {
     if (confirm("Are you sure you want to delete this data plan?")) {
-      deleteDataPlanMutation.mutate(planId);
+      deleteDataPlanMutation.mutate(planId, {
+        onSuccess: () => {
+          setSuccessDetails({
+            title: "Data Plan Deleted Successfully",
+            message: `The data plan has been deleted.`,
+          });
+          setShowSuccess(true);
+        },
+      });
     }
+  };
+
+  const handleFilterChange = (key: string, value: string) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const clearFilters = () => {
+    setFilters({ network: "", plan_type: "" });
   };
 
   return (
@@ -76,6 +145,55 @@ export default function DataPlans() {
       <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-6">
         Data plans
       </h1>
+
+      {/* Filters */}
+      <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6">
+        <div className="flex items-center gap-4 mb-4">
+          <Filter className="w-5 h-5 text-gray-500" />
+          <h3 className="font-medium">Filters</h3>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Network
+            </label>
+            <select
+              value={filters.network}
+              onChange={(e) => handleFilterChange("network", e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            >
+              <option value="">All Networks</option>
+              <option value="MTN">MTN</option>
+              <option value="GLO">GLO</option>
+              <option value="AIRTEL">AIRTEL</option>
+              <option value="9MOBILE">9MOBILE</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Plan Type
+            </label>
+            <select
+              value={filters.plan_type}
+              onChange={(e) => handleFilterChange("plan_type", e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            >
+              <option value="">All Types</option>
+              <option value="SME">SME</option>
+              <option value="CG">CG</option>
+              <option value="Corporate">Corporate</option>
+            </select>
+          </div>
+          <div className="flex items-end">
+            <button
+              onClick={clearFilters}
+              className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors"
+            >
+              Clear Filters
+            </button>
+          </div>
+        </div>
+      </div>
 
       {/* Add button */}
       <div className="flex justify-end mb-6">
@@ -160,7 +278,11 @@ export default function DataPlans() {
                       ₦{plan.apiPrice}
                     </td>
                     <td className="px-4 md:px-6 py-4">
-                      <button className="text-indigo-600 hover:text-indigo-800">
+                      <button
+                        className="text-indigo-600 hover:text-indigo-800"
+                        onClick={() => handleEditPlan(plan)}
+                        disabled={updateDataPlanMutation.isPending}
+                      >
                         <Edit className="w-5 h-5" />
                       </button>
                     </td>
@@ -209,6 +331,20 @@ export default function DataPlans() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onAddPlan={handleAddPlan}
+        isUpdate={false}
+      />
+
+      {/* Update Data Plan Modal */}
+      <AddDataPlanModal
+        isOpen={isUpdateModalOpen}
+        onClose={() => {
+          setIsUpdateModalOpen(false);
+          setSelectedPlan(null);
+        }}
+        onAddPlan={handleAddPlan}
+        onUpdatePlan={handleUpdatePlan}
+        selectedPlan={selectedPlan}
+        isUpdate={true}
       />
 
       {/* Success Message */}
